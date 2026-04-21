@@ -16,24 +16,20 @@ public class GameWorkflowImpl implements GameWorkflow {
         GameState state = new GameState();
 
         GameActivities activities = Workflow.newActivityStub(
-                GameActivities.class,
-                ActivityOptions.newBuilder()
-                        .setStartToCloseTimeout(Duration.ofSeconds(10))
-                        .build()
+            GameActivities.class,
+            ActivityOptions.newBuilder()
+                .setStartToCloseTimeout(Duration.ofMinutes(5))
+                .build()
         );
 
-        // TEMP: simulate a few turns
-        String[] inputs = {
-                "I sneak past the guard",
-                "I attack the guard",
-                "I rest"
-        };
+        for (int i = 0; i < 3; i++) {
 
-        for (String input : inputs) {
+            String input = activities.getPlayerInput();
+
             String result = activities.handleTurn(input, state);
 
             Workflow.getLogger(GameWorkflowImpl.class)
-                    .info(result + " | Stress: " + state.getStress("player"));
+                .info(result + " | Stress: " + state.getStress("player"));
         }
     }
 }

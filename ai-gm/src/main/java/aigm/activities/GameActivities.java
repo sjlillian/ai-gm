@@ -6,4 +6,6 @@ import aigm.gamestate.GameState;
 @ActivityInterface
 public interface GameActivities {
     String handleTurn(String input, GameState state);
+
+    String getPlayerInput();
 }

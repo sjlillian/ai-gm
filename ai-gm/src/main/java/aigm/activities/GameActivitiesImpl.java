@@ -26,6 +26,15 @@ public class GameActivitiesImpl implements GameActivities {
         return "You hesitate, unsure how to act.";
     }
 
+    @Override
+    public String getPlayerInput() {
+        System.out.print("> ");
+
+        java.util.Scanner scanner = new java.util.Scanner(System.in);
+        
+        return scanner.nextLine();
+    }
+
 
     private String handleProwl(GameState state) {
         int stress = state.getStress("player");
