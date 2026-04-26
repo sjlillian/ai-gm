@@ -17,6 +17,7 @@ public class GameActivitiesImpl implements GameActivities {
         if (lower.contains("attack") || lower.contains("fight")) {
             return handleSkirmish(state);
         }
+        
 
         if (lower.contains("rest") || lower.contains("recover")) {
             return handleRecover(state);
