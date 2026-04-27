@@ -1,9 +1,0 @@
-aigm\workflows\GameWorkflow.class
-aigm\activities\GameActivitiesImpl.class
-aigm\gamestate\Phase.class
-aigm\workers\GameWorker.class
-aigm\workflows\GameWorkflowImpl.class
-aigm\gamestate\GameState.class
-aigm\App.class
-aigm\activities\GameActivities.class
-aigm\starters\GameStarter.class
