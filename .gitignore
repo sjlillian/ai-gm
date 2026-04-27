@@ -1,3 +1,5 @@
 target/
 .vscode/
-.mvn/
+ai-gm/.mvn/
+.commands
+.github/

@@ -9,7 +9,7 @@ public class GameState implements Serializable {
     private Phase phase; // "freeplay", "score", "downtime"
 
     private Map<String, Integer> playerStress;
-    private Map<String, Integer> clocks;
+    private Map<String, Clock> clocks;
 
     public GameState() {
         this.phase = Phase.FREEPLAY;
@@ -37,15 +37,15 @@ public class GameState implements Serializable {
         return this.playerStress.getOrDefault(player, 0);
     }
 
-    public Map<String, Integer> getClocks() {
+    public Map<String, Clock> getClocks() {
         return clocks;
     }
 
     public void setClock(String name, int value) {
-        this.clocks.put(name, value);
+        this.clocks.put(name, new Clock(name, 0, value));
     }
 
-    public int getClock(String name) {
-        return this.clocks.getOrDefault(name, 0);
+    public Clock getClock(String name) {
+        return this.clocks.getOrDefault(name, new Clock(name, 0, 4));
     }
 }

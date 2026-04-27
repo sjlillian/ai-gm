@@ -7,6 +7,7 @@ import java.time.Duration;
 
 import aigm.activities.GameActivities;
 import aigm.gamestate.GameState;
+import aigm.gamestate.TurnResult;
 
 public class GameWorkflowImpl implements GameWorkflow {
 
@@ -22,14 +23,20 @@ public class GameWorkflowImpl implements GameWorkflow {
                 .build()
         );
 
+        Workflow.getLogger(GameWorkflowImpl.class)
+            .info("You stand in a dim alley. A Bluecoat guard blocks the exit, lantern in hand.");
+
+        Workflow.getLogger(GameWorkflowImpl.class)
+            .info("What do you do?");
+
         for (int i = 0; i < 3; i++) {
 
             String input = activities.getPlayerInput();
 
-            String result = activities.handleTurn(input, state);
+            TurnResult result = activities.handleTurn(input, state);
 
             Workflow.getLogger(GameWorkflowImpl.class)
-                .info(result + " | Stress: " + state.getStress("player"));
+                .info(result.getNarration() + " | Stress: " + state.getStress("player"));
         }
     }
 }
