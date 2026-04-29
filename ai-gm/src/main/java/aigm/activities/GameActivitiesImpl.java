@@ -1,5 +1,6 @@
 package aigm.activities;
 
+import aigm.gamestate.Action;
 import aigm.gamestate.GameState;
 import aigm.gamestate.TurnResult;
 
