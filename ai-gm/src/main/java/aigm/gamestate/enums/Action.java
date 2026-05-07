@@ -1,4 +1,4 @@
-package aigm.gamestate;
+package aigm.gamestate.enums;
 
 public enum Action {
     HUNT(Attribute.INSIGHT),

@@ -2,6 +2,8 @@ package aigm.gamestate;
 
 import java.util.Map;
 
+import aigm.gamestate.enums.Action;
+
 public class Player {
 
     private String name;
