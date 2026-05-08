@@ -8,13 +8,23 @@ import aigm.gamestate.TurnResult;
 public class GameActivitiesImpl implements GameActivities {
 
     @Override
-    public TurnResult handleTurn(String input, GameState state) {
+    public TurnResult handleTurn(GameState state) {
 
-        String action = extractAction(input);
+        String action = getPlayerInput();
+
+        String narration = handleAction(action, state);
+
+        return new TurnResult(state, narration);
+    }
+
+    private String getPlayerInput() {
+        System.out.print("> ");
 
         java.util.Scanner scanner = new java.util.Scanner(System.in);
 
-        // --- Clarification loop ---
+        String input;
+        String action = null;
+
         while (action == null) {
             System.out.println("I'm not sure what action you're taking. What are you trying to do?");
             System.out.print("> ");
@@ -23,45 +33,9 @@ public class GameActivitiesImpl implements GameActivities {
             action = extractAction(input);
         }
 
-        // --- Resolve action ---
-        switch (action) {
-            case "hunt":
-                return new TurnResult(state, handleHunt(state));
-            case "study":
-                return new TurnResult(state, handleStudy(state));
-            case "survey":
-                return new TurnResult(state, handleSurvey(state));
-            case "tinker":
-                return new TurnResult(state, handleTinker(state));
-            case "finesse":
-                return new TurnResult(state, handleFinesse(state));
-            case "prowl":
-                return new TurnResult(state, handleProwl(state));
-            case "skirmish":
-                return new TurnResult(state, handleSkirmish(state));
-            case "wreck":
-                return new TurnResult(state, handleWreck(state));
-            case "attune":
-                return new TurnResult(state, handleAttune(state));
-            case "command":
-                return new TurnResult(state, handleCommand(state));
-            case "consort":
-                return new TurnResult(state, handleConsort(state));
-            case "sway":
-                return new TurnResult(state, handleSway(state));
+        scanner.close();
 
-            default:
-                return new TurnResult(state, "You act, but nothing significant happens.");
-        }
-    }
-
-    @Override
-    public String getPlayerInput() {
-        System.out.print("> ");
-
-        java.util.Scanner scanner = new java.util.Scanner(System.in);
-        
-        return scanner.nextLine();
+        return action;
     }
 
     private String extractAction(String input) {
@@ -81,113 +55,17 @@ public class GameActivitiesImpl implements GameActivities {
         return null;
     }
 
-    private String handleHunt(GameState state) {
+    private String handleAction(String action, GameState state) {
+        handleStress(state);
+
+        return "You " + action + ".";
+    }
+
+    private void handleStress(GameState state) {
         int stress = state.players().stream().filter(
             p -> p.getName().equals("player")
         ).findFirst().orElse(new Player("player")).getStress();
         state.changeStress("player", stress + 1);
-
-        return "You go on the hunt. (Stress +1)";
-    }
-
-    private String handleStudy(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You study your surroundings. (Stress +1)";
-    }
-
-    private String handleSurvey(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You survey the area. (Stress +1)";
-    }
-
-    private String handleTinker(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You tinker with your gear. (Stress +1)";
-    }
-
-    private String handleFinesse(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You perform a delicate action. (Stress +1)";
-    }
-
-
-    private String handleProwl(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You melt into the shadows. (Stress +1)";
-    }
-
-    private String handleSkirmish(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 2);
-
-        return "You engage in brutal close combat. (Stress +2)";
-    }
-
-    private String handleWreck(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 2);
-
-        return "You unleash a powerful attack. (Stress +2)";
-    }
-
-    private String handleAttune(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You attune to your surroundings. (Stress +1)";
-    }
-
-    private String handleCommand(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You command an ally to act. (Stress +1)";
-    }
-
-    private String handleConsort(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You consort with someone to gain information. (Stress +1)";
-    }
-
-    private String handleSway(GameState state) {
-        int stress = state.players().stream().filter(
-            p -> p.getName().equals("player")
-        ).findFirst().orElse(new Player("player")).getStress();
-        state.changeStress("player", stress + 1);
-
-        return "You attempt to sway someone to your side. (Stress +1)";
     }
 
     // private String handleRecover(GameState state) {

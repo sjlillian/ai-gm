@@ -30,10 +30,8 @@ public class GameWorkflowImpl implements GameWorkflow {
             .info("What do you do?");
 
         for (int i = 0; i < 3; i++) {
-
-            String input = activities.getPlayerInput();
-
-            TurnResult result = activities.handleTurn(input, state);
+            
+            TurnResult result = activities.handleTurn(state);
 
             Workflow.getLogger(GameWorkflowImpl.class)
                 .info(result.narration() + " | State: " + result.state().toString());
