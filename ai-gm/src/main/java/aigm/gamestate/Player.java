@@ -14,7 +14,7 @@ public class Player {
     private int coin;
     private int stash;
 
-    public Player(String name, Crew crew) {
+    public Player(String name) {
         this.name = name;
         this.stress = 0;
         //this.truama = new Truama();
@@ -25,6 +25,10 @@ public class Player {
         //this.harm = new Harm();
         this.coin = 0;
         this.stash = 0;
+    }
+
+    public void updateStress(int delta) {
+        this.stress = this.stress + delta;
     }
 
     public String getName() {

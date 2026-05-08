@@ -2,6 +2,7 @@ package aigm.activities;
 
 import aigm.gamestate.enums.Action;
 import aigm.gamestate.GameState;
+import aigm.gamestate.Player;
 import aigm.gamestate.TurnResult;
 
 public class GameActivitiesImpl implements GameActivities {
@@ -81,95 +82,121 @@ public class GameActivitiesImpl implements GameActivities {
     }
 
     private String handleHunt(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You go on the hunt. (Stress +1)";
     }
 
     private String handleStudy(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You study your surroundings. (Stress +1)";
     }
 
     private String handleSurvey(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You survey the area. (Stress +1)";
     }
 
     private String handleTinker(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You tinker with your gear. (Stress +1)";
     }
 
     private String handleFinesse(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You perform a delicate action. (Stress +1)";
     }
 
 
     private String handleProwl(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You melt into the shadows. (Stress +1)";
     }
 
     private String handleSkirmish(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 2);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 2);
 
         return "You engage in brutal close combat. (Stress +2)";
     }
 
     private String handleWreck(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 2);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 2);
 
         return "You unleash a powerful attack. (Stress +2)";
     }
 
     private String handleAttune(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You attune to your surroundings. (Stress +1)";
     }
 
     private String handleCommand(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You command an ally to act. (Stress +1)";
     }
 
     private String handleConsort(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You consort with someone to gain information. (Stress +1)";
     }
 
     private String handleSway(GameState state) {
-        int stress = state.playerStress().get("player");
-        state.setStress("player", stress + 1);
+        int stress = state.players().stream().filter(
+            p -> p.getName().equals("player")
+        ).findFirst().orElse(new Player("player")).getStress();
+        state.changeStress("player", stress + 1);
 
         return "You attempt to sway someone to your side. (Stress +1)";
     }
 
     // private String handleRecover(GameState state) {
-    //     int stress = state.playerStress().get("player");
+    //     int stress = state.players().stream().filter(
+    //     p -> p.getName().equals("player")
+    // ).findFirst().orElse(new Player("player")).getStress();
     //     int newStress = Math.max(0, stress - 2);
 
-    //     state.setStress("player", newStress);
+    //     state.changeStress("player", newStress);
 
     //     return "You take a moment to recover. (Stress -2)";
     // }

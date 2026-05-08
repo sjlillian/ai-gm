@@ -36,7 +36,7 @@ public class GameWorkflowImpl implements GameWorkflow {
             TurnResult result = activities.handleTurn(input, state);
 
             Workflow.getLogger(GameWorkflowImpl.class)
-                .info(result.narration() + " | Stress: " + result.state().playerStress().get("Player") + " | Clocks: " + result.state().clocks());
+                .info(result.narration() + " | State: " + result.state().toString());
         }
     }
 }
