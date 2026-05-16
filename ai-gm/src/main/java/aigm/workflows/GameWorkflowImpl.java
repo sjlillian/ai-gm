@@ -12,9 +12,9 @@ import aigm.gamestate.TurnResult;
 public class GameWorkflowImpl implements GameWorkflow {
 
     @Override
-    public void runGameSession() {
+    public void runGameSession(GameState initialState) {
 
-        GameState state = new GameState();
+        GameState state = initialState;
 
         GameActivities activities = Workflow.newActivityStub(
             GameActivities.class,

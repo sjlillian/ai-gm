@@ -1,5 +1,6 @@
 package aigm.gamestate;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import aigm.gamestate.enums.Action;
@@ -14,11 +15,16 @@ public class Player {
     private int coin;
     private int stash;
 
+    public Player() {
+        // default constructor for serialization
+    }
+
     public Player(String name) {
         this.name = name;
         this.stress = 0;
         //this.truama = new Truama();
         // initialize action ratings to 0
+        this.actionRatings = new HashMap<>();
         for (Action action : Action.values()) {
             actionRatings.put(action, 0);
         }
