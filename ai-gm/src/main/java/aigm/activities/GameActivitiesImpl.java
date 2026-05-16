@@ -7,6 +7,12 @@ import aigm.gamestate.TurnResult;
 
 public class GameActivitiesImpl implements GameActivities {
 
+    //TODO: Split Handle Turn into multiple basic activites:
+    // - Get Player Input
+    // - Handle Action (with separate handlers for each action)
+    // - Handle Naration
+    // - Roll Dice
+
     @Override
     public TurnResult handleTurn(GameState state) {
 
