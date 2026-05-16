@@ -1,9 +1,10 @@
 package aigm.gamestate;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Crew {
+public class Crew implements Serializable{
 
     private String name;
     private List<Player> members;

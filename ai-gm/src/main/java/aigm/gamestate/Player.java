@@ -1,11 +1,12 @@
 package aigm.gamestate;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import aigm.gamestate.enums.Action;
 
-public class Player {
+public class Player implements Serializable{
 
     private String name;
     private int stress;
