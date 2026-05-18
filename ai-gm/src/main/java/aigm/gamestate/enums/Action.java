@@ -7,7 +7,7 @@ public enum Action {
     TINKER(Attribute.PROWESS),
     FINESSE(Attribute.PROWESS),
     PROWL(Attribute.PROWESS),
-    SKRIMISH(Attribute.PROWESS),
+    SKIRMISH(Attribute.PROWESS),
     WRECK(Attribute.PROWESS),
     ATTUNE(Attribute.RESOLVE),
     COMMAND(Attribute.RESOLVE),
@@ -24,5 +24,3 @@ public enum Action {
         return attribute;
     }
 }
-
-

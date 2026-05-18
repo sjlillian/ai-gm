@@ -1,17 +1,14 @@
 package aigm.starters;
+
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 
-import java.util.ArrayList;
-import java.util.List;
+import aigm.gamestate.GameWorkflow;
 
-import aigm.gamestate.GameState;
-import aigm.gamestate.Player;
-import aigm.workflows.GameWorkflow;
-
+/* A starter is the API that connects the outside (Discord, Webapp, etc.) to the workflow. This should be a list of endpoints in my application that are called by the client */
 public class GameStarter {
-    public static void main(String[] args) {
+    public void run() {
 
         WorkflowServiceStubs service = WorkflowServiceStubs.newLocalServiceStubs();
         WorkflowClient client = WorkflowClient.newInstance(service);
@@ -20,31 +17,8 @@ public class GameStarter {
                 .setTaskQueue("GAME_TASK_QUEUE")
                 .build();
 
-        GameWorkflow workflow =
-                client.newWorkflowStub(GameWorkflow.class, options);
+        GameWorkflow workflow = client.newWorkflowStub(GameWorkflow.class, options);
 
-        GameState initialState = createInitialGameState();
-        
-        workflow.runGameSession(initialState);
-    }
-
-    private static GameState createInitialGameState() {
-        // Create a test player
-        Player testPlayer = new Player("player");
-        
-        // Create the initial game state
-        GameState initialState = new GameState();
-        
-        // Add the player to the state
-        List<Player> players = new ArrayList<>(initialState.players());
-        players.add(testPlayer);
-        
-        // Return a new GameState with the player
-        return new GameState(
-            initialState.phase(),
-            initialState.crews(),
-            players,
-            initialState.clocks()
-        );
+        workflow.runGameSession();
     }
 }

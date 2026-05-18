@@ -1,10 +1,13 @@
 package aigm.activities;
 
+import aigm.gamestate.enums.Action;
 import io.temporal.activity.ActivityInterface;
-import aigm.gamestate.GameState;
-import aigm.gamestate.TurnResult;
+import io.temporal.activity.ActivityMethod;
 
 @ActivityInterface
 public interface GameActivities {
-    TurnResult handleTurn(GameState state);
+
+    @ActivityMethod
+    void handleAction(Action action);
+
 }
