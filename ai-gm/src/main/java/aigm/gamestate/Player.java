@@ -12,7 +12,7 @@ public class Player implements Serializable{
     private int stress;
     //private Truama truama;
     private Map<Action, Integer> actionRatings;
-    //private Harm harm;
+    private Harm harm;
     private int coin;
     private int stash;
 
@@ -24,12 +24,12 @@ public class Player implements Serializable{
         this.name = name;
         this.stress = 0;
         //this.truama = new Truama();
-        // initialize action ratings to 0
+        // Initialize action ratings to 0
         this.actionRatings = new HashMap<>();
         for (Action action : Action.values()) {
             actionRatings.put(action, 0);
         }
-        //this.harm = new Harm();
+        this.harm = new Harm();
         this.coin = 0;
         this.stash = 0;
     }
@@ -52,6 +52,10 @@ public class Player implements Serializable{
 
     public int getActionRating(Action action) {
         return actionRatings.getOrDefault(action, 0);
+    }
+
+    public Harm getHarm() {
+        return harm;
     }
 
     public int getCoin() {  
