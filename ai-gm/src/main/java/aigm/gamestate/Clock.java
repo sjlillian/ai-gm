@@ -13,10 +13,10 @@ public class Clock implements Serializable {
         this.max = 4; // Default clock size
     }
 
-    public Clock(String name, int value) {
+    public Clock(String name, int max) {
         this.name = name;
         this.progress = 0;
-        this.max = value;
+        this.max = max;
     }
 
     public Clock(String name, int progress, int max) {
