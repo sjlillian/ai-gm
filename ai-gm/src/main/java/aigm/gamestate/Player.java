@@ -9,8 +9,7 @@ import aigm.gamestate.enums.Action;
 public class Player implements Serializable{
 
     private String name;
-    private int stress;
-    //private Truama truama;
+    private Truama truama;
     private Map<Action, Integer> actionRatings;
     private Harm harm;
     private int coin;
@@ -22,8 +21,7 @@ public class Player implements Serializable{
 
     public Player(String name) {
         this.name = name;
-        this.stress = 0;
-        //this.truama = new Truama();
+        this.truama = new Truama();
         // Initialize action ratings to 0
         this.actionRatings = new HashMap<>();
         for (Action action : Action.values()) {
@@ -35,19 +33,15 @@ public class Player implements Serializable{
     }
 
     public void updateStress(int delta) {
-        this.stress = this.stress + delta;
+        this.truama.addStress(delta);
     }
 
     public String getName() {
         return name;
     }
 
-    public int getStress() {
-        return stress;
-    }
-
-    public void setStress(int stress) {
-        this.stress = stress;
+    public Clock getStress() {
+        return truama.getStress();
     }
 
     public int getActionRating(Action action) {
