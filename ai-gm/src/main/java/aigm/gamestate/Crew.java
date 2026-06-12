@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import aigm.gamestate.dto.CrewType;
+
 public class Crew implements Serializable{
 
     private String name;
@@ -40,6 +42,18 @@ public class Crew implements Serializable{
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public CrewType getType() {
+        return type;
+    }
+
+    public void setType(CrewType type) {
+        this.type = type;
+    }
+
     public void addMember(Player player) {
         members.add(player);
     }
@@ -47,4 +61,22 @@ public class Crew implements Serializable{
     public List<Player> getMembers() {
         return members;
     }
+
+    public Heat getHeat() {
+        return heat;
+    }
+
+    public CrewStanding getCrewStanding() {
+        return crewStanding;
+    }
+
+    public Clock getCrewXP() {
+        return crewXP;
+    }
+
+    public List<Clock> getClocks() {
+        return clocks;
+    }
+
+    
 }
