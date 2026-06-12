@@ -2,7 +2,7 @@ package aigm.gamestate.dto;
 
 public class Ability {
 
-    private enum scope {
+    private enum Scope {
         PLAYER, CREW;
     }
 
