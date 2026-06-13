@@ -144,7 +144,7 @@ Temporal's characteristics make it ideal for game engines:
 4. **Scalability**: Run multiple games concurrently
 5. **Auditability**: Complete event history of every game
 
-Read the [full blog post]([https://github.com/sjlillian/ai-gm](https://spencerjl.com/blog/Building%20an%20AI%20Game%20Master%20with%20Temporal)) for an in-depth discussion of game design lessons and Temporal architecture.
+Read the [full blog post](https://spencerjl.com/blog/Building%20an%20AI%20Game%20Master%20with%20Temporal) for an in-depth discussion of game design lessons and Temporal architecture.
 
 ## Learning Resources
 
