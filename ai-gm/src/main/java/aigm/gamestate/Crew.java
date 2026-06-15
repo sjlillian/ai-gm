@@ -4,7 +4,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import aigm.gamestate.dto.Ability;
+import aigm.gamestate.dto.Contact;
 import aigm.gamestate.dto.CrewType;
+import aigm.gamestate.dto.Upgrade;
+import aigm.gamestate.score.Score;
 
 public class Crew implements Serializable{
 
@@ -14,14 +18,10 @@ public class Crew implements Serializable{
     private Heat heat;
     private CrewStanding crewStanding;
     private Clock crewXP;
-    //private List<CrewAbility> abilities;
-    //private List<Upgrade> upgrades;
-    //private List<Contact> contacts;
-
-    //private List<LairFeature> lair;
-    //private List<FactionStatus> factionStatuses;
-    //private List<Score> scores;
-
+    private List<Ability> abilities;
+    private List<Upgrade> upgrades;
+    private List<Contact> contacts;
+    private List<Score> scores;
     private List<Clock> clocks;
 
     public Crew() {
@@ -35,6 +35,10 @@ public class Crew implements Serializable{
         this.heat = new Heat();
         this.crewStanding = new CrewStanding();
         this.crewXP = new Clock("crewXP", 10);
+        this.abilities = new ArrayList<>();
+        this.upgrades = new ArrayList<>();
+        this.contacts = new ArrayList<>();
+        this.scores = new ArrayList<>();
         this.clocks = new ArrayList<>();
     }
 
@@ -78,5 +82,33 @@ public class Crew implements Serializable{
         return clocks;
     }
 
-    
+    public List<Contact> getContacts() {
+        return contacts;
+    }
+
+    public List<Score> getScores() {
+        return scores;
+    }
+    public List<Ability> getAbilities() {
+        return abilities;
+    }
+
+    public List<Upgrade> getUpgrades() {
+        return upgrades;
+    }
+
+    public void addAbility(Ability ability) {
+        abilities.add(ability);
+    }
+    public void addUpgrade(Upgrade upgrade) {
+        upgrades.add(upgrade);
+    }
+
+    public void addContact(Contact contact) {
+        contacts.add(contact);
+    }
+
+    public void addScore(Score score) {
+        scores.add(score);
+    }
 }

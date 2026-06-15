@@ -32,19 +32,14 @@ public class Player implements Serializable{
         this.harm = new Harm();
         this.coin = 0;
         this.stash = 0;
-    }
+    } 
 
     public Player(String name, Playbook playbook) {
         this.name = name;
         this.truama = new Truama();
         // Initialize action ratings based on playbook starting actions
-        this.actionRatings = new HashMap<>();
-        for (Action action : Action.values()) {
-            actionRatings.put(action, 0);
-        }
-        for (Action action : playbook.getStartingActions()) {
-            actionRatings.put(action, 1); // Starting actions get a rating of 1
-        }
+        this.actionRatings = playbook.getStartingActions().stream()
+                .collect(HashMap::new, (map, action) -> map.put(action, 1), HashMap::putAll);
         this.harm = new Harm();
         this.coin = 0;
         this.stash = 0;
