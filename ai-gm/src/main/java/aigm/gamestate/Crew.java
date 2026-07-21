@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import aigm.gamestate.enums.CrewType;
-
 public class Crew implements Serializable{
 
     private String name;
@@ -34,7 +32,7 @@ public class Crew implements Serializable{
         this.members = new ArrayList<>();
         this.heat = new Heat();
         this.crewStanding = new CrewStanding();
-        this.crewXP = new Clock(10);
+        this.crewXP = new Clock("crewXP", 10);
         this.clocks = new ArrayList<>();
     }
 
