@@ -24,7 +24,7 @@ public class CrewStanding {
         this.reputation = Reputation.AMBITIOUS; // Default starting reputation
         this.tier = Tier.ZERO; // Default starting tier
         this.hold = Hold.STRONG; // Default starting hold
-        this.rep = new Clock("reputation", 12); // Reputation clock with 12 segments
+        this.rep = new Clock("rep", 12); // Reputation clock with 12 segments
         this.turf = 0;
     }
 
@@ -32,7 +32,7 @@ public class CrewStanding {
         this.reputation = reputation;
         this.tier = tier;
         this.hold = hold;
-        this.rep = new Clock("reputation", 12);
+        this.rep = new Clock("rep", 12);
         this.turf = 0;
     }
 

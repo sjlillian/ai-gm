@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import aigm.gamestate.dto.Playbook;
 import aigm.gamestate.enums.Action;
 
 public class Player implements Serializable{
@@ -14,6 +15,7 @@ public class Player implements Serializable{
     private Harm harm;
     private int coin;
     private int stash;
+    private Playbook playbook;
 
     public Player() {
         // default constructor for serialization
@@ -30,6 +32,18 @@ public class Player implements Serializable{
         this.harm = new Harm();
         this.coin = 0;
         this.stash = 0;
+    } 
+
+    public Player(String name, Playbook playbook) {
+        this.name = name;
+        this.truama = new Truama();
+        // Initialize action ratings based on playbook starting actions
+        this.actionRatings = playbook.getStartingActions().stream()
+                .collect(HashMap::new, (map, action) -> map.put(action, 1), HashMap::putAll);
+        this.harm = new Harm();
+        this.coin = 0;
+        this.stash = 0;
+        this.playbook = playbook;
     }
 
     public void updateStress(int delta) {
@@ -66,6 +80,14 @@ public class Player implements Serializable{
 
     public void setStash(int stash) {
         this.stash = stash;
+    }
+
+    public Playbook getPlaybook() {
+        return playbook;
+    }
+
+    public void setPlaybook(Playbook playbook) {
+        this.playbook = playbook;
     }
 
 }
