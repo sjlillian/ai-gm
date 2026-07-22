@@ -145,7 +145,7 @@ public class Harm implements Serializable {
         }
     }
 
-    // --- State Getters for the AI-GM and Temporal Serialization ---
+    // --- State Getters for Serialization ---
     public List<Injury>[] getHarmMatrix() { return harmMatrix; }
     public int getRecoveryClockSegments() { return recoveryClock.getProgress(); }
     public boolean isDead() { return isDead; }

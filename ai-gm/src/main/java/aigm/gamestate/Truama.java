@@ -43,7 +43,6 @@ public class Truama {
 
     private void addCondition() {
         // For simplicity, we'll just add conditions in a fixed order.
-        // In a real implementation, you might want to randomize this or allow player choice.
         Condition[] allConditions = Condition.values();
         for (Condition condition : allConditions) {
             if (!conditions.contains(condition)) {

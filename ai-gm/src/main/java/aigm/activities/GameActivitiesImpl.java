@@ -1,6 +1,7 @@
 package aigm.activities;
 
 import aigm.gamestate.enums.Action;
+import aigm.gamestate.Player;
 
 public class GameActivitiesImpl implements GameActivities {
 
@@ -44,19 +45,10 @@ public class GameActivitiesImpl implements GameActivities {
         String lower = input.toLowerCase();
 
         for (Action action : Action.values()) {
-            if (lower.contains(action.toString().toLowerCase())) {
+            if (lower.contains(action.toString().toLowerCase())) { // TODO: Add synonyms to ACTIONS enum
                 return action;
             }
         }
-
-        // basic synonyms
-        if (lower.contains("sneak"))
-            return Action.PROWL;
-        if (lower.contains("attack") || lower.contains("fight"))
-            return Action.SKIRMISH;
-        if (lower.contains("persuade") || lower.contains("convince"))
-            return Action.SWAY;
-
         return null;
     }
 
@@ -83,4 +75,30 @@ public class GameActivitiesImpl implements GameActivities {
 
     // return "You take a moment to recover. (Stress -2)";
     // }
+
+
+    // Can be used for any roll that uses a players action rating to determine the amount of dice to roll
+    private void actionRoll(Player player, Action action) {
+        int diceAmount = player.getActionRating(action);
+        int roll = rollDice(diceAmount);
+    }
+
+    // Can be used for any roll that uses a players attribute rating to determine the amount of dice to roll
+    private void resistanceRoll(Player player, Action action) {
+        int diceAmount = action.getAttribute().calculateRating(player);
+        int roll = rollDice(diceAmount);
+    }
+
+    private int rollDice(int diceAmount) {
+        Random random = new Random();
+        int max = 0;
+        for (int i = 0; i < diceAmount; i++) {
+            int roll = random.nextInt() + 1;
+            if (roll > max)
+                max = roll;
+        }
+        return roll;
+    }
+
+
 }
