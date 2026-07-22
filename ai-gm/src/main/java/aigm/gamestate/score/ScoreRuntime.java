@@ -70,4 +70,16 @@ public class ScoreRuntime {
     public Effect getEffect() {
         return effect;
     }
+
+    public String getEffectDescription() {
+        return effect.getDescription();
+    }
+
+    public int getEffectTicks() {
+        return effect.getTicks();
+    }
+
+    public String getPositionDescription() {
+        return position.getDescription();
+    }
 }
