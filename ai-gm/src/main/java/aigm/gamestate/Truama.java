@@ -3,6 +3,9 @@ package aigm.gamestate;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Data;
+
+@Data
 public class Truama {
 
     public enum Condition {
@@ -29,15 +32,12 @@ public class Truama {
     private Clock stress = new Clock("Stress", 9);
     private List<Condition> conditions = new ArrayList<>();
 
-    public void addStress(int segments) {
-        
-        while (segments > 0) {
-            stress.tick();
-            if (stress.isComplete()) {
-                stress.setProgress(0); // Reset stress clock
-                addCondition(); // Add a new condition
-            }
-            segments--;
+    public void updateStress(int delta) {
+        stress.tick(delta);
+
+        if (stress.isComplete()) {
+            stress.setProgress(0); // Reset stress clock
+            addCondition(); // Add a new condition
         }
     }
 
@@ -51,13 +51,4 @@ public class Truama {
             }
         }
     }
-
-    public Clock getStress() {
-        return stress;
-    }
-
-    public List<Condition> getConditions() {
-        return conditions;
-    }
-
 }

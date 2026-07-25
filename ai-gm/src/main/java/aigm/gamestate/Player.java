@@ -6,7 +6,9 @@ import java.util.Map;
 
 import aigm.gamestate.dto.Playbook;
 import aigm.gamestate.enums.Action;
+import lombok.Data;
 
+@Data
 public class Player implements Serializable{
 
     private String name;
@@ -38,8 +40,7 @@ public class Player implements Serializable{
         this.name = name;
         this.truama = new Truama();
         // Initialize action ratings based on playbook starting actions
-        this.actionRatings = playbook.getStartingActions().stream()
-                .collect(HashMap::new, (map, action) -> map.put(action, 1), HashMap::putAll);
+        this.actionRatings = new HashMap<>(playbook.getStartingActions());
         this.harm = new Harm();
         this.coin = 0;
         this.stash = 0;
@@ -47,47 +48,10 @@ public class Player implements Serializable{
     }
 
     public void updateStress(int delta) {
-        this.truama.addStress(delta);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Clock getStress() {
-        return truama.getStress();
+        this.truama.updateStress(delta);
     }
 
     public int getActionRating(Action action) {
         return actionRatings.getOrDefault(action, 0);
     }
-
-    public Harm getHarm() {
-        return harm;
-    }
-
-    public int getCoin() {  
-        return coin;
-    }
-
-    public void setCoin(int coin) {
-        this.coin = coin;
-    }
-
-    public int getStash() {
-        return stash;
-    }
-
-    public void setStash(int stash) {
-        this.stash = stash;
-    }
-
-    public Playbook getPlaybook() {
-        return playbook;
-    }
-
-    public void setPlaybook(Playbook playbook) {
-        this.playbook = playbook;
-    }
-
 }

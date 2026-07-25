@@ -1,5 +1,8 @@
 package aigm.gamestate;
 
+import lombok.Data;
+
+@Data
 public class Heat {
 
     private Clock heat;
@@ -10,19 +13,11 @@ public class Heat {
         this.wantedLevel = 0;
     }
 
-    public void increaseHeat(int amount) {
-        heat.tick(amount);
+    public void updateHeat(int delta) {
+        heat.tick(delta);
         if (heat.isComplete()) {
             heat.setProgress(0);
             wantedLevel++;
         }
-    }
-
-    public Clock getHeat() {
-        return heat;
-    }
-
-    public int getWantedLevel() {
-        return wantedLevel;
     }
 }

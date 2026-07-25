@@ -1,7 +1,9 @@
 package aigm.gamestate.dto;
 
 import aigm.gamestate.enums.RelationshipStatus;
+import lombok.Data;
 
+@Data
 public class Contact {
 
     private String name;
@@ -17,29 +19,4 @@ public class Contact {
         this.description = description;
         this.relationshipStatus = relationshipStatus;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public RelationshipStatus getRelationshipStatus() {
-        return relationshipStatus;
-    }
-
-    public void setRelationshipStatus(RelationshipStatus relationshipStatus) {
-        this.relationshipStatus = relationshipStatus;
-    }
-
 }

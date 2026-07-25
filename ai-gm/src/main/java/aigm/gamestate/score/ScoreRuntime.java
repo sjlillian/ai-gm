@@ -3,7 +3,9 @@ package aigm.gamestate.score;
 import java.util.ArrayList;
 import java.util.List;
 import aigm.gamestate.Clock;
+import lombok.Data;
 
+@Data
 public class ScoreRuntime {
 
     private enum Position {
@@ -57,18 +59,6 @@ public class ScoreRuntime {
         this.clocks = clocks;
         this.position = position;
         this.effect = effect;
-    }
-
-    public List<Clock> getClocks() {
-        return clocks;
-    }
-
-    public Position getPosition() {
-        return position;
-    }
-
-    public Effect getEffect() {
-        return effect;
     }
 
     public String getEffectDescription() {

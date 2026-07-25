@@ -2,6 +2,7 @@ package aigm.activities;
 
 import aigm.gamestate.enums.Action;
 import aigm.gamestate.Player;
+import java.util.Random;
 
 public class GameActivitiesImpl implements GameActivities {
 
@@ -97,7 +98,7 @@ public class GameActivitiesImpl implements GameActivities {
             if (roll > max)
                 max = roll;
         }
-        return roll;
+        return max;
     }
 
 

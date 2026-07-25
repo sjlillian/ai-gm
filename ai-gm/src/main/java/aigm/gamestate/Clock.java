@@ -2,6 +2,9 @@ package aigm.gamestate;
 
 import java.io.Serializable;
 
+import lombok.Data;
+
+@Data
 public class Clock implements Serializable {
     private String name;
     private int progress;
@@ -40,29 +43,4 @@ public class Clock implements Serializable {
     public String toString() {
         return name + ": " + progress + "/" + max;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public int getProgress() {
-        return progress;
-    }
-
-    public void setProgress(int progress) {
-        this.progress = progress;
-    }
-
-    public int getMax() {
-        return max;
-    }
-
-    public void setMax(int value) {
-        this.max = value;
-    }
-
 }

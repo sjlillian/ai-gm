@@ -1,14 +1,17 @@
 package aigm.gamestate.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import aigm.gamestate.enums.Action;
+import lombok.Data;
 
+@Data
 public class Playbook {
 
     private String name;
     private String xpTrigger;
-    private List<Action> startingActions;
+    private Map<Action, Integer> startingActions;
     private List<Ability> abilities;
     private List<Item> items;
 
@@ -16,7 +19,7 @@ public class Playbook {
         // default constructor for serialization
     }
 
-    public Playbook(String name, String xpTrigger, List<Action> startingActions, List<Ability> abilities, List<Item> items) {
+    public Playbook(String name, String xpTrigger, Map<Action, Integer> startingActions, List<Ability> abilities, List<Item> items) {
         this.name = name;
         this.xpTrigger = xpTrigger;
         this.startingActions = startingActions;
@@ -24,44 +27,8 @@ public class Playbook {
         this.items = items;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getXpTrigger() {
-        return xpTrigger;
-    }
-
-    public void setXpTrigger(String xpTrigger) {
-        this.xpTrigger = xpTrigger;
-    }
-
-    public List<Action> getStartingActions() {
-        return startingActions;
-    }
-
-    public void setStartingActions(List<Action> startingActions) {
-        this.startingActions = startingActions;
-    }
-
-    public List<Ability> getAbilities() {
-        return abilities;
-    }
-
-    public void setAbilities(List<Ability> abilities) {
-        this.abilities = abilities;
-    }
-
-    public List<Item> getItems() {
-        return items;
-    }
-
-    public void setItems(List<Item> items) {
-        this.items = items;
+    public void addStartingAction(Action action, Integer count) {
+        this.startingActions.put(action, count);
     }
 
     public void addAbility(Ability ability) {

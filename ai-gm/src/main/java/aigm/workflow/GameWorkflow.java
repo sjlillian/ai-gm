@@ -1,10 +1,13 @@
-package aigm.gamestate;
+package aigm.workflow;
 
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 
 import java.util.List;
 
+import aigm.gamestate.Clock;
+import aigm.gamestate.Crew;
+import aigm.gamestate.Player;
 import aigm.gamestate.enums.Phase;
 
 @WorkflowInterface

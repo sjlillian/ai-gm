@@ -1,5 +1,8 @@
 package aigm.gamestate;
 
+import lombok.Data;
+
+@Data
 public class CrewStanding {
 
     private enum Reputation {
@@ -89,25 +92,4 @@ public class CrewStanding {
             default: break; // Already at lowest tier
         }
     }
-
-    public Reputation getReputation() {
-        return reputation;
-    }
-
-    public Tier getTier() {
-        return tier;
-    }
-
-    public Hold getHold() {
-        return hold;
-    }
-
-    public Clock getRep() {
-        return rep;
-    }
-
-    public int getTurf() {
-        return turf;
-    }
-
 }

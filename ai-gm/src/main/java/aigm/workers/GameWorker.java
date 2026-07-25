@@ -7,7 +7,7 @@ import io.temporal.worker.WorkerFactory;
 import io.temporal.worker.WorkerOptions;
 import io.temporal.worker.tuning.PollerBehaviorAutoscaling;
 import aigm.activities.GameActivitiesImpl;
-import aigm.gamestate.GameWorkflowImpl;
+import aigm.workflow.GameWorkflowImpl;
 
 /* A worker is a long running process that handles the execution of workflows and activities. It is the bridge between the Temporal service and the actual logic of the application */
 

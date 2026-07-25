@@ -9,7 +9,9 @@ import aigm.gamestate.dto.Contact;
 import aigm.gamestate.dto.CrewType;
 import aigm.gamestate.dto.Upgrade;
 import aigm.gamestate.score.Score;
+import lombok.Data;
 
+@Data
 public class Crew implements Serializable{
 
     private String name;
@@ -42,59 +44,36 @@ public class Crew implements Serializable{
         this.clocks = new ArrayList<>();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public CrewType getType() {
-        return type;
-    }
-
-    public void setType(CrewType type) {
-        this.type = type;
-    }
-
     public void addMember(Player player) {
         members.add(player);
     }
 
-    public List<Player> getMembers() {
-        return members;
+    public void updateHeat(int delta) {
+        heat.updateHeat(delta);
     }
 
-    public Heat getHeat() {
-        return heat;
+    public void addTurf(int amount) {
+        crewStanding.addTurf(amount);
     }
 
-    public CrewStanding getCrewStanding() {
-        return crewStanding;
+    public void addRep(int amount) {
+        crewStanding.addRep(amount);
     }
 
-    public Clock getCrewXP() {
-        return crewXP;
+    public void advanceHold() {
+        crewStanding.advanceHold();
     }
 
-    public List<Clock> getClocks() {
-        return clocks;
+    public void advanceTier() {
+        crewStanding.advanceTier();
     }
 
-    public List<Contact> getContacts() {
-        return contacts;
+    public void reduceHold() {
+        crewStanding.reduceHold();
     }
 
-    public List<Score> getScores() {
-        return scores;
-    }
-    public List<Ability> getAbilities() {
-        return abilities;
-    }
-
-    public List<Upgrade> getUpgrades() {
-        return upgrades;
+    public void reduceTier() {
+        crewStanding.reduceTier();
     }
 
     public void addAbility(Ability ability) {
@@ -110,5 +89,9 @@ public class Crew implements Serializable{
 
     public void addScore(Score score) {
         scores.add(score);
+    }
+
+    public void addClock(Clock newClock) {
+        clocks.add(newClock);
     }
 }

@@ -1,5 +1,8 @@
 package aigm.gamestate.score;
 
+import lombok.Data;
+
+@Data
 public class Score {
 
     private String title;
@@ -22,25 +25,4 @@ public class Score {
         this.runtime = new ScoreRuntime();
         this.outcome = new ScoreOutcome();
     }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public ScoreType getType() {
-        return type;
-    }
-
-    public ScoreStatus getStatus() {
-        return status;
-    }
-
-    public ScoreRuntime getRuntime() {
-        return runtime;
-    }
-
-    public ScoreOutcome getOutcome() {
-        return outcome;
-    }
-
 }

@@ -2,6 +2,9 @@ package aigm.gamestate.dto;
 
 import java.util.List;
 
+import lombok.Data;
+
+@Data
 public class CrewType {
 
     private String type;
@@ -21,47 +24,7 @@ public class CrewType {
         this.abilities = abilities;
         this.claims = claims;
     }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getXpTrigger() {
-        return xpTrigger;
-    }
-
-    public void setXpTrigger(String xpTrigger) {
-        this.xpTrigger = xpTrigger;
-    }
-
-    public List<Upgrade> getUpgrades() {
-        return upgrades;
-    }
-
-    public void setUpgrades(List<Upgrade> upgrades) {
-        this.upgrades = upgrades;
-    }
-
-    public List<Ability> getAbilities() {
-        return abilities;
-    }
-
-    public void setAbilities(List<Ability> abilities) {
-        this.abilities = abilities;
-    }
-
-    public List<Claim> getClaims() {
-        return claims;
-    }
-
-    public void setClaims(List<Claim> claims) {
-        this.claims = claims;
-    }
-
+    
     public void addUpgrade(Upgrade upgrade) {
         this.upgrades.add(upgrade);
     }

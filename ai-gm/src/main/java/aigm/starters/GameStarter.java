@@ -4,7 +4,7 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 
-import aigm.gamestate.GameWorkflow;
+import aigm.workflow.GameWorkflow;
 
 /* A starter is the API that connects the outside (Discord, Webapp, etc.) to the workflow. This should be a list of endpoints in my application that are called by the client */
 public class GameStarter {

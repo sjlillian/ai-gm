@@ -1,5 +1,8 @@
 package aigm.gamestate.score;
 
+import lombok.Data;
+
+@Data
 public class ScoreOutcome {
 
     private boolean success;
@@ -23,25 +26,4 @@ public class ScoreOutcome {
         this.xpGained = xpGained;
         this.coinsGained = coinsGained;
     }
-
-    public boolean isSuccess() {
-        return success;
-    }
-
-    public int getHeatGained() {
-        return heatGained;
-    }
-
-    public int getRepGained() {
-        return repGained;
-    }
-
-    public int getXpGained() {
-        return xpGained;
-    }
-
-    public int getCoinsGained() {
-        return coinsGained;
-    }
-
 }

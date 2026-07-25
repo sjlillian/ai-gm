@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import aigm.gamestate.enums.Armor;
+import lombok.Data;
 
+@Data
 public class Harm implements Serializable {
 
     public enum HarmLevel {
@@ -144,12 +146,7 @@ public class Harm implements Serializable {
             }
         }
     }
-
-    // --- State Getters for Serialization ---
-    public List<Injury>[] getHarmMatrix() { return harmMatrix; }
-    public int getRecoveryClockSegments() { return recoveryClock.getProgress(); }
-    public boolean isDead() { return isDead; }
-
+    
     public int getDicePenalty() {
         if (!harmMatrix[2].isEmpty()) return -100; // Custom flag for Incapacitated / Can't act
         if (!harmMatrix[1].isEmpty()) return -1;   // -1 die to actions (or -1 effect depending on edition/ruling)

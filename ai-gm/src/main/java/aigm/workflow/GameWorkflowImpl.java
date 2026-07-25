@@ -1,4 +1,4 @@
-package aigm.gamestate;
+package aigm.workflow;
 
 import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.Workflow;
@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import aigm.activities.GameActivities;
+import aigm.gamestate.Clock;
+import aigm.gamestate.Crew;
+import aigm.gamestate.Player;
 import aigm.gamestate.enums.Action;
 import aigm.gamestate.enums.Phase;
 

@@ -1,5 +1,8 @@
 package aigm.gamestate.dto;
 
+import lombok.Data;
+
+@Data
 public class Claim {
 
     private String name;
@@ -15,29 +18,4 @@ public class Claim {
         this.description = description;
         this.perk = perk;
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getPerk() {
-        return perk;
-    }
-
-    public void setPerk(String perk) {
-        this.perk = perk;
-    }
-
 }
