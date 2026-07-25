@@ -1,4 +1,4 @@
-package aigm.gamestate;
+package aigm.gamestate.player;
 
 import java.util.ArrayList;
 import java.util.List;

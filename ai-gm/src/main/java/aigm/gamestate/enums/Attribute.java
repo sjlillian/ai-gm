@@ -2,7 +2,7 @@ package aigm.gamestate.enums;
 
 import java.util.Arrays;
 
-import aigm.gamestate.Player;
+import aigm.gamestate.player.Player;
 
 public enum Attribute {
     INSIGHT,

@@ -1,4 +1,4 @@
-package aigm.gamestate;
+package aigm.gamestate.player;
 
 import java.io.Serializable;
 import java.util.HashMap;

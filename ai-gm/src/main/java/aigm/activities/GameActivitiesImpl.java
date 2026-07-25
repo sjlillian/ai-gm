@@ -1,7 +1,8 @@
 package aigm.activities;
 
 import aigm.gamestate.enums.Action;
-import aigm.gamestate.Player;
+import aigm.gamestate.player.Player;
+
 import java.util.Random;
 
 public class GameActivitiesImpl implements GameActivities {

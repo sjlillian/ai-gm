@@ -19,6 +19,6 @@ public class GameStarter {
 
         GameWorkflow workflow = client.newWorkflowStub(GameWorkflow.class, options);
 
-        workflow.runGameSession();
+        workflow.runCampaign();
     }
 }
