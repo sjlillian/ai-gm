@@ -1,8 +1,6 @@
-package aigm.gamestate.enums;
+package aigm.gamestate.player;
 
 import java.util.Arrays;
-
-import aigm.gamestate.player.Player;
 
 public enum Attribute {
     INSIGHT,
@@ -12,7 +10,7 @@ public enum Attribute {
     public int calculateRating(Player player) {
         return (int) Arrays.stream(Action.values())
             .filter(a -> a.getAttribute() == this)
-            .filter(a -> player.getActionRating(a) > 0)
+            .filter(a -> player.actionRatings().getOrDefault(a, 0) > 0)
             .count();
     }
 }

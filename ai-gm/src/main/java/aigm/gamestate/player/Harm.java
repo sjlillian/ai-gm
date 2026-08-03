@@ -1,14 +1,16 @@
 package aigm.gamestate.player;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-import aigm.gamestate.enums.Armor;
-import lombok.Data;
+import aigm.gamestate.Clock;
 
-@Data
-public class Harm implements Serializable {
+public record Harm(
+    List<Injury> injuries,
+    Clock recoveryClock,
+    boolean isDead
+) {
 
     public enum HarmLevel {
         LESSER(0), MODERATE(1), SEVERE(2), CATASTROPHIC(3); // levels for indexing
@@ -24,132 +26,103 @@ public class Harm implements Serializable {
         }
 
         public HarmLevel upgrade() {
-            switch (this) {
-                case LESSER: return MODERATE;
-                case MODERATE: return SEVERE;
-                case SEVERE: return CATASTROPHIC;
-                default: return CATASTROPHIC; // Already at max severity
-            }
+            int next = Math.min(this.ordinal() + 1, values().length - 1);
+            return values()[next];
         }
 
         public HarmLevel downgrade() {
-            switch (this) {
-                case CATASTROPHIC: return SEVERE;
-                case SEVERE: return MODERATE;
-                case MODERATE: return LESSER;
-                default: return null; // Can't downgrade below Lesser
-            }
+            int next = Math.max(this.ordinal() - 1, 0);
+            return values()[next];
         }
     }
 
-    public class Injury {
-        private String description;
-        private HarmLevel level;
-
-        public Injury(String description, HarmLevel level) {
-            this.description = description;
-            this.level = level;
+    public record Injury(String description, HarmLevel level) {
+        public Injury withLevel(HarmLevel newLevel) {
+            return new Injury(description, newLevel);
         }
 
-        public String getDescription() { return description; }
-        public HarmLevel getLevel() { return level; }
+        public Injury withDescription(String newDescription) {
+            return new Injury(newDescription, level);
+        }
+
+        public Injury upgraded() {
+            return new Injury(description, level.upgrade());
+        }
     }
 
-    // 3 rows of harm matching the sheet: index 0 = LESSER, index 1 = MODERATE, index 2 = SEVERE
-    private final List<Injury>[] harmMatrix;
-    
-    // Embedded 4-segment clock specifically for recovery
-    private Clock recoveryClock = new Clock("Healing", 4);
-    private boolean isDead = false;
+    private static final Clock DEFAULT_RECOVERY_CLOCK = new Clock("Recovery", 0, 6);
 
-    @SuppressWarnings("unchecked")
+    private static final Map<HarmLevel, Integer> CAPACITY = Map.of(
+        HarmLevel.LESSER, 2,
+        HarmLevel.MODERATE, 2,
+        HarmLevel.SEVERE, 1,
+        HarmLevel.CATASTROPHIC, 0
+    );
+
     public Harm() {
-        this.harmMatrix = new List[3];
-        this.harmMatrix[0] = new ArrayList<>(2); // Lesser (Max 2)
-        this.harmMatrix[1] = new ArrayList<>(2); // Moderate (Max 2)
-        this.harmMatrix[2] = new ArrayList<>(1); // Severe (Max 1)
+        this(new ArrayList<>(), DEFAULT_RECOVERY_CLOCK, false);
     }
 
-    /**
-     * Records new harm, automatically handling upward spillover mechanics.
-     */
-    public void applyHarm(String description, HarmLevel level, Armor armor) {
-        if (isDead) return;
+    public Harm withInjury(String description, HarmLevel level) {
+        if (isDead) return this; // No changes if already dead
+
+        int occupied = atLevel(level).size();
+        if (occupied < CAPACITY.get(level)) {
+            List<Injury> newInjuries = new ArrayList<>(injuries);
+            newInjuries.add(new Injury(description, level));
+            return new Harm(newInjuries, recoveryClock, isDead);
+        }
+
+        if (level == HarmLevel.CATASTROPHIC) {
+            return new Harm(injuries, recoveryClock, true); // Player is dead
+        }
+
+        return withInjury(description, level.upgrade()); // Try next level up
+    }
+
+    public Harm withInjury(String description, HarmLevel level, Armor armor) {
+        HarmLevel effectiveLevel = applyArmor(level, armor);
+
+        if (effectiveLevel == null) {
+            return this; // Armor negates the injury
+        }
+        return withInjury(description, effectiveLevel);
+    }
+
+    private HarmLevel applyArmor(HarmLevel level, Armor armor) {
+        if (armor == null) return level;
 
         switch (armor) {
-            case STANDARD: // Standard armor negates one level of harm severity
-                level = level.downgrade() != null ? level.downgrade() : level; 
-                break;
-            case HEAVY: // Heavy armor negates two levels of harm severity
-                level = level.downgrade() != null ? level.downgrade() : level; 
-                level = level.downgrade() != null ? level.downgrade() : level;
-                break;
+            case STANDARD:
+                if (level == HarmLevel.LESSER) return null; // Negated
+                return level.downgrade();
+            case HEAVY:
+                if (level == HarmLevel.LESSER || level == HarmLevel.MODERATE) return null; // Negated
+                return level.downgrade();
             case SPECIAL:
-                // Special armor logic
-                break;
+                return null; // STUB: All injuries negated TODO: Implement special armor logic based on playbook abilities
             default:
-                // Standard armor does not modify harm
-                break;
-        }
-
-        if (level == null) return; // If armor negates all harm, do nothing
-
-        applyHarm(description, level);
-    }
-
-    public void applyHarm(String description, HarmLevel level) {
-        if (isDead) return;
-
-        int targetRow = level.getLevel();
-        if (harmMatrix[targetRow].size() < (targetRow == 2 ? 1 : 2)) {
-            // If there's room in the target row, add the harm directly
-            harmMatrix[targetRow].add(new Injury(description, level));
-        } else {
-            // Try to apply at the next severity level
-            applyHarm(description, level.upgrade());
+                return level;
         }
     }
 
-    /**
-     * Ticks the dedicated recovery clock. Clears all harm by 1 tier when full.
-     */
-    public void tickRecovery(int segments) {
-
-        while (segments > 0 && !isDead) {
-            recoveryClock.tick();
-            if (recoveryClock.isComplete()) {
-                processHealingResolution();
-                recoveryClock.setProgress(0); // Reset for next cycle
-            }
-            segments--;
-        }
-    }
-
-    /**
-     * Lowers all existing injuries by exactly 1 level. Level 1 injuries disappear.
-     */
-    private void processHealingResolution() {
-        // Step 1: Collect and clear all existing injuries
-        List<Injury> allCurrentInjuries = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            for (Injury injury : harmMatrix[i]) {
-                // Store injuries alongside their original level
-                allCurrentInjuries.add(injury);
-            }
-            harmMatrix[i].clear();
-        }
-
-        // Step 2: Demote their level by 1 and re-apply them
-        for (Injury injury : allCurrentInjuries) {
-            if (injury.getLevel().downgrade() != null) {
-                applyHarm(injury.getDescription(), injury.getLevel().downgrade());
+    public List<Injury> atLevel(HarmLevel level) {
+        List<Injury> filtered = new ArrayList<>();
+        for (Injury injury : injuries) {
+            if (injury.level().equals(level)) {
+                filtered.add(injury);
             }
         }
+        return filtered;
     }
-    
-    public int getDicePenalty() {
-        if (!harmMatrix[2].isEmpty()) return -100; // Custom flag for Incapacitated / Can't act
-        if (!harmMatrix[1].isEmpty()) return -1;   // -1 die to actions (or -1 effect depending on edition/ruling)
-        return 0;
+
+    public Harm applyRecovery(int delta) {
+        if (isDead) return this; // No changes if already dead
+
+        Clock updatedrecoveryClock = recoveryClock.tick(delta);
+        if (updatedrecoveryClock.isComplete()) {
+            return new Harm(new ArrayList<>(), updatedrecoveryClock, isDead); // All injuries healed
+        }
+        return this;
     }
 }

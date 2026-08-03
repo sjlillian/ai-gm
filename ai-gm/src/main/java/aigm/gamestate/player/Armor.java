@@ -1,4 +1,4 @@
-package aigm.gamestate.enums;
+package aigm.gamestate.player;
 
 public enum Armor {
     STANDARD("2 Load"),

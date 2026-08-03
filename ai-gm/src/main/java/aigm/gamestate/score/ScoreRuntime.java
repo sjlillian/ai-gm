@@ -3,7 +3,7 @@ package aigm.gamestate.score;
 import java.util.ArrayList;
 import java.util.List;
 
-import aigm.gamestate.player.Clock;
+import aigm.gamestate.Clock;
 import lombok.Data;
 
 @Data

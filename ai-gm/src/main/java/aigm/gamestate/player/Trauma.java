@@ -1,12 +1,13 @@
 package aigm.gamestate.player;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
+import aigm.gamestate.Clock;
 
-@Data
-public class Truama {
+public record Trauma(
+    Clock stress,
+    List<Condition> conditions
+) {
 
     public enum Condition {
         COLD("You're not moved by emotional appeals or social bonds."),
@@ -29,26 +30,31 @@ public class Truama {
         }
     }
     
-    private Clock stress = new Clock("Stress", 9);
-    private List<Condition> conditions = new ArrayList<>();
-
-    public void updateStress(int delta) {
-        stress.tick(delta);
-
-        if (stress.isComplete()) {
-            stress.setProgress(0); // Reset stress clock
-            addCondition(); // Add a new condition
-        }
+    public Trauma() {
+        this(new Clock("Stress", 10), List.of());
     }
 
-    private void addCondition() {
-        // For simplicity, we'll just add conditions in a fixed order.
-        Condition[] allConditions = Condition.values();
-        for (Condition condition : allConditions) {
-            if (!conditions.contains(condition)) {
-                conditions.add(condition);
-                break;
-            }
-        }
+    public Trauma updateStress(int delta) {
+        Clock updatedStress = stress.tick(delta);
+
+        if (updatedStress.isComplete())
+            return new Trauma(new Clock("Stress", 10), updateConditions()); // Player is at max stress, no further changes
+
+        return new Trauma(updatedStress, conditions);
+    }
+
+    private List<Condition> updateConditions() {
+        // Simply returns a random condition
+        List<Condition> updatedConditions = new java.util.ArrayList<>(conditions);
+        updatedConditions.add(Condition.values()[(int) (Math.random() * Condition.values().length)]);
+        return updatedConditions;
+    }
+
+    public Trauma withStressClock(Clock stress) {
+        return new Trauma(stress, conditions);
+    }
+
+    public Trauma withConditions(List<Condition> conditions) {
+        return new Trauma(stress, conditions);
     }
 }

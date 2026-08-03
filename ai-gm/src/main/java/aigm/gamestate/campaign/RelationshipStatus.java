@@ -1,4 +1,4 @@
-package aigm.gamestate.enums;
+package aigm.gamestate.campaign;
 
 public enum RelationshipStatus {
     

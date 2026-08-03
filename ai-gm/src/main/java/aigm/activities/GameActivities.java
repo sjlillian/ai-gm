@@ -1,6 +1,6 @@
 package aigm.activities;
 
-import aigm.gamestate.enums.Action;
+import aigm.gamestate.player.Action;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 

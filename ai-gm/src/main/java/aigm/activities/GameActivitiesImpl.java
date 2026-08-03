@@ -1,6 +1,6 @@
 package aigm.activities;
 
-import aigm.gamestate.enums.Action;
+import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Player;
 
 import java.util.Random;
