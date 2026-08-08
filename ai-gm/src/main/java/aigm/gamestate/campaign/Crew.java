@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import aigm.gamestate.Ability;
 import aigm.gamestate.Clock;
+import aigm.gamestate.campaign.CrewStanding.Hold;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.score.Score;
 
@@ -64,8 +65,8 @@ public record Crew(
 
     // ---- heat / wanted level ----
 
-    public Crew addHeat(int amount) {
-        return withHeat(heat.addHeat(amount));
+    public Crew updateHeat(int delta) {
+        return withHeat(heat.updateHeat(delta));
     }
 
     /** Incarceration: wanted level -1, heat cleared. The only way wanted level goes down. */
@@ -82,10 +83,11 @@ public record Crew(
      * capped until they can pay, per the rules).
      */
     public Crew tryAdvance() {
-        if (!crewStanding.repFull()) {
+        if (!crewStanding.rep().isComplete()) {
             return this;
         }
-        if (crewStanding.hold() == Hold.WEAK) {
+        crewStanding.hold();
+		if (crewStanding.hold() == Hold.STRONG) {
             return withCrewStanding(crewStanding.advanceHold());
         }
         int cost = crewStanding.tierAdvancementCost();

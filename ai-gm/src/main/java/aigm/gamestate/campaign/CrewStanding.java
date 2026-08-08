@@ -32,7 +32,7 @@ public record CrewStanding(
         }
     }
 
-    private enum Hold {
+    public enum Hold {
         STRONG, WEAK;
     }
 
