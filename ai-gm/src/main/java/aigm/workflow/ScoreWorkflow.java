@@ -2,6 +2,7 @@ package aigm.workflow;
 
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
+import io.temporal.workflow.UpdateMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 
@@ -9,6 +10,8 @@ import java.util.Map;
 
 import aigm.gamestate.Clock;
 import aigm.gamestate.Position;
+import aigm.gamestate.player.Action;
+import aigm.llm.gm.LlmActivities;
 
 /**
  * Short-lived (relative to Campaign/PC) workflow representing a single score/heist.
@@ -73,10 +76,20 @@ public interface ScoreWorkflow {
     @SignalMethod
     void endScore(ScoreEndRequest end);
 
+    /**
+     * GM call: given fiction + the action the player wants, the LLM sets
+     * position/effect (no dice). Call this before {@link #recordActionRoll}.
+     */
+    @UpdateMethod
+    LlmActivities.Adjudication adjudicate(String situation, String approach, Action chosenAction);
+
     /** Read-only snapshot of clocks currently active during this score, for UI. */
     @QueryMethod
     Map<String, Clock> getClocks();
 
     @QueryMethod
     Position getEngagementPosition();
+
+    @QueryMethod
+    LlmActivities.Adjudication getLastAdjudication();
 }

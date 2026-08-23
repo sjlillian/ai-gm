@@ -1,0 +1,2 @@
+aigm.llm.openai.OpenAiCompatibleClient$Provider
+aigm.llm.stub.StubLlmClient$Provider

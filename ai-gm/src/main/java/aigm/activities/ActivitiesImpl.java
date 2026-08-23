@@ -5,14 +5,10 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import aigm.gamestate.DiceRoll;
-import aigm.gamestate.Effect;
-import aigm.gamestate.Position;
 import aigm.gamestate.campaign.Heat;
-import aigm.gamestate.player.Action;
 
 /**
- * Dice pools and Core Rulebook table lookups. Adjudication/narration are
- * placeholders until an LLM client is wired (Temporal AI activity pattern).
+ * Dice pools and Core Rulebook table lookups.
  */
 public class ActivitiesImpl implements Activities {
 
@@ -120,24 +116,6 @@ public class ActivitiesImpl implements Activities {
     @Override
     public DiceRoll reduceHeat(int dice) {
         return rollPool(Math.max(0, dice));
-    }
-
-    @Override
-    public Adjudication adjudicateAction(String situation, String approach, Action chosenAction) {
-        // Placeholder until LLM GM is wired. Defaults match a typical score beat.
-        return new Adjudication(
-            chosenAction,
-            Position.RISKY,
-            Effect.STANDARD,
-            "Stub adjudication for: " + approach + " using " + chosenAction
-                + " given '" + situation + "'. Replace with LLM GM.",
-            List.of("Complication", "Harm", "Clock advances", "Worse position")
-        );
-    }
-
-    @Override
-    public String narrate(String situation, String mechanicalOutcome) {
-        return situation + " → " + mechanicalOutcome;
     }
 
     /** BitD zero-rating rule: roll two dice, keep the lower. */

@@ -2,6 +2,9 @@ package aigm.workers;
 
 import aigm.TaskQueues;
 import aigm.activities.ActivitiesImpl;
+import aigm.llm.LlmClient;
+import aigm.llm.LlmClients;
+import aigm.llm.gm.LlmActivitiesImpl;
 import aigm.workflow.CampaignImplemented;
 import aigm.workflow.DowntimeImplemented;
 import aigm.workflow.PlayerImplemented;
@@ -32,9 +35,11 @@ public class GameWorker {
             DowntimeImplemented.class,
             PlayerImplemented.class
         );
-        worker.registerActivitiesImplementations(new ActivitiesImpl());
+        LlmClient llm = LlmClients.fromEnvironment();
+        worker.registerActivitiesImplementations(new ActivitiesImpl(), new LlmActivitiesImpl(llm));
 
         factory.start();
         System.out.println("Worker started on " + TaskQueues.GAME);
+        System.out.println("LLM: " + llm.describe());
     }
 }

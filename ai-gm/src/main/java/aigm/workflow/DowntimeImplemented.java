@@ -11,6 +11,7 @@ import aigm.activities.Activities;
 import aigm.gamestate.DiceRoll;
 import aigm.gamestate.player.Advancement;
 import aigm.gamestate.player.Harm;
+import aigm.llm.gm.LlmActivities;
 import io.temporal.workflow.Workflow;
 
 /**
@@ -34,7 +35,7 @@ public class DowntimeImplemented implements DowntimeWorkflow {
         }
 
         Activities activities = WorkflowSupport.activities();
-        Activities narrate = WorkflowSupport.llmActivities();
+        LlmActivities narrate = WorkflowSupport.llmActivities();
 
         Activities.EntanglementResult entanglement = activities.rollEntanglement(
             request.wantedLevel(),
@@ -58,7 +59,7 @@ public class DowntimeImplemented implements DowntimeWorkflow {
     private void resolveActivity(
         DowntimeActivityChoice choice,
         Activities activities,
-        Activities narrate
+        LlmActivities narrate
     ) {
         String pcWorkflowId = resolvePcWorkflowId(choice.pcId());
         PlayerWorkflow pc = pcWorkflowId == null

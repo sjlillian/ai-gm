@@ -9,8 +9,10 @@ import aigm.activities.Activities;
 import aigm.gamestate.Clock;
 import aigm.gamestate.DiceRoll;
 import aigm.gamestate.Position;
+import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Advancement;
 import aigm.gamestate.score.ScoreOutcome;
+import aigm.llm.gm.LlmActivities;
 import io.temporal.workflow.Workflow;
 
 /**
@@ -25,12 +27,13 @@ public class ScoreImplemented implements ScoreWorkflow {
     private Position engagementPosition = Position.RISKY;
     private ScoreEndRequest endRequest;
     private boolean ended;
+    private LlmActivities.Adjudication lastAdjudication;
 
     @Override
     public ScoreResult run(ScoreRequest request) {
         this.request = request;
         Activities activities = WorkflowSupport.activities();
-        Activities narrate = WorkflowSupport.llmActivities();
+        LlmActivities narrate = WorkflowSupport.llmActivities();
 
         DiceRoll engagement = activities.rollEngagement(request.engagementDice());
         engagementPosition = WorkflowSupport.engagementPosition(engagement);
@@ -138,6 +141,13 @@ public class ScoreImplemented implements ScoreWorkflow {
     }
 
     @Override
+    public LlmActivities.Adjudication adjudicate(String situation, String approach, Action chosenAction) {
+        LlmActivities llm = WorkflowSupport.llmActivities();
+        lastAdjudication = llm.adjudicateAction(situation, approach, chosenAction);
+        return lastAdjudication;
+    }
+
+    @Override
     public Map<String, Clock> getClocks() {
         return Map.copyOf(clocks);
     }
@@ -145,5 +155,10 @@ public class ScoreImplemented implements ScoreWorkflow {
     @Override
     public Position getEngagementPosition() {
         return engagementPosition;
+    }
+
+    @Override
+    public LlmActivities.Adjudication getLastAdjudication() {
+        return lastAdjudication;
     }
 }

@@ -3,16 +3,13 @@ package aigm.activities;
 import java.util.List;
 
 import aigm.gamestate.DiceRoll;
-import aigm.gamestate.Effect;
-import aigm.gamestate.Position;
 import aigm.gamestate.campaign.Heat;
-import aigm.gamestate.player.Action;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
 /**
- * Non-deterministic work for the campaign: dice, rulebook table lookups that
- * depend on a roll, and LLM GM adjudication/narration.
+ * Non-deterministic work for the campaign: dice and rulebook table lookups.
+ * GM adjudication and narration live in {@link aigm.llm.gm.LlmActivities}.
  * <p>
  * Deterministic sheet mutations (stress, coin, clocks) belong in workflow
  * signal handlers, not here. Player input belongs on workflow signals, not
@@ -54,12 +51,6 @@ public interface Activities {
     @ActivityMethod
     DiceRoll reduceHeat(int dice);
 
-    @ActivityMethod
-    Adjudication adjudicateAction(String situation, String approach, Action chosenAction);
-
-    @ActivityMethod
-    String narrate(String situation, String mechanicalOutcome);
-
     record PayoffResult(int coin, int rep, String notes) {}
 
     record HeatContext(
@@ -93,12 +84,4 @@ public interface Activities {
     record AcquireAssetResult(int quality, String notes) {}
 
     record RecoveryRollResult(int segments, String notes) {}
-
-    record Adjudication(
-        Action action,
-        Position position,
-        Effect effect,
-        String reasoning,
-        List<String> possibleStakes
-    ) {}
 }

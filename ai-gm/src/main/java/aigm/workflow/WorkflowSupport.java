@@ -5,6 +5,7 @@ import java.time.Duration;
 import aigm.activities.Activities;
 import aigm.gamestate.DiceRoll;
 import aigm.gamestate.Position;
+import aigm.llm.gm.LlmActivities;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
@@ -29,14 +30,16 @@ final class WorkflowSupport {
         );
     }
 
-    static Activities llmActivities() {
+    static LlmActivities llmActivities() {
         return Workflow.newActivityStub(
-            Activities.class,
+            LlmActivities.class,
             ActivityOptions.newBuilder()
-                .setStartToCloseTimeout(Duration.ofMinutes(5))
+                .setStartToCloseTimeout(Duration.ofMinutes(10))
                 .setRetryOptions(
                     RetryOptions.newBuilder()
                         .setMaximumAttempts(3)
+                        .setInitialInterval(Duration.ofSeconds(2))
+                        .setBackoffCoefficient(2.0)
                         .build()
                 )
                 .build()
