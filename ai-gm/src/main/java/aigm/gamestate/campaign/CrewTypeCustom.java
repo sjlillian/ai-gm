@@ -3,12 +3,14 @@ package aigm.gamestate.campaign;
 import java.util.List;
 
 import aigm.gamestate.Ability;
+import aigm.gamestate.Contact;
 
 public record CrewTypeCustom(
     String type,
     String xpTrigger,
     List<Upgrade> upgrades,
     List<Ability> abilities,
+    List<Contact> contacts,
     List<Claim> claims
 ) implements CrewType {
 
@@ -30,6 +32,11 @@ public record CrewTypeCustom(
     @Override
     public List<Ability> getAbilities() {
         return abilities;
+    }
+
+    @Override
+    public List<Contact> getContacts() {
+        return contacts;
     }
 
     @Override

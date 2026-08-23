@@ -11,10 +11,13 @@ import org.junit.jupiter.api.Test;
 import aigm.client.DemoCrews;
 import aigm.gamestate.Ability;
 import aigm.gamestate.AbilityCustom;
-import aigm.gamestate.AbilityEnum;
+import aigm.gamestate.Contact;
+import aigm.gamestate.ContactCustom;
+import aigm.gamestate.campaign.CrewAbilityEnum;
 import aigm.gamestate.campaign.ClaimCustom;
 import aigm.gamestate.campaign.ClaimEnum;
 import aigm.gamestate.campaign.Crew;
+import aigm.gamestate.campaign.CrewContactEnum;
 import aigm.gamestate.campaign.CrewTypeCustom;
 import aigm.gamestate.campaign.CrewTypeEnum;
 import aigm.gamestate.campaign.UpgradeCustom;
@@ -23,6 +26,8 @@ import aigm.gamestate.player.ItemCustom;
 import aigm.gamestate.player.ItemEnum;
 import aigm.gamestate.player.PlaybookCustom;
 import aigm.gamestate.player.PlaybookEnum;
+import aigm.gamestate.player.PlayerAbilityEnum;
+import aigm.gamestate.player.PlayerContactEnum;
 import aigm.gamestate.player.Player;
 import aigm.workflow.CampaignState;
 import io.temporal.api.common.v1.Payload;
@@ -51,6 +56,7 @@ class CatalogJsonTest {
             "When you pull off a score in your hunting grounds",
             List.of(new UpgradeCustom("Safehouse", "A bolt-hole", 1)),
             List.of(new AbilityCustom("Ghost Echo", "Leave no trace", Ability.Scope.CREW)),
+            List.of(new ContactCustom("Mara", "A whisper-monger.", Contact.Scope.CREW)),
             List.of(new ClaimCustom("Whispers", "Rumors find you", "info"))
         );
         Crew original = DemoCrews.nightspires();
@@ -64,22 +70,25 @@ class CatalogJsonTest {
             original.heat(),
             original.crewStanding(),
             original.crewXP(),
-            List.of(AbilityEnum.ABILITY_1, new AbilityCustom("Home brew", "custom", Ability.Scope.CREW)),
-            List.of(UpgradeEnum.HIDEOUT, new UpgradeCustom("Workshop", "tools", 2)),
-            original.contacts(),
-            List.of(ClaimEnum.CLAIM_1, new ClaimCustom("Dock", "a pier", "turf")),
+            List.of(CrewAbilityEnum.DEADLY, new AbilityCustom("Home brew", "custom", Ability.Scope.CREW)),
+            List.of(UpgradeEnum.HIDDEN_LAIR, new UpgradeCustom("Safehouse", "tools", 2)),
+            List.of(CrewContactEnum.SHADOWS_DOWLER, new ContactCustom("Mara", "A whisper-monger.", Contact.Scope.CREW)),
+            List.of(ClaimEnum.INFORMANTS, new ClaimCustom("Dock", "a pier", "turf")),
             original.scores(),
             original.clocks(),
+            original.cohorts(),
             original.factionStatuses()
         );
 
         Crew restored = roundTrip(original, Crew.class);
         assertInstanceOf(CrewTypeCustom.class, restored.type());
         assertEquals(type, restored.type());
-        assertEquals(AbilityEnum.ABILITY_1, restored.abilities().get(0));
+        assertEquals(CrewAbilityEnum.DEADLY, restored.abilities().get(0));
         assertInstanceOf(AbilityCustom.class, restored.abilities().get(1));
-        assertEquals(UpgradeEnum.HIDEOUT, restored.upgrades().get(0));
-        assertEquals(ClaimEnum.CLAIM_1, restored.claims().get(0));
+        assertEquals(UpgradeEnum.HIDDEN_LAIR, restored.upgrades().get(0));
+        assertEquals(CrewContactEnum.SHADOWS_DOWLER, restored.contacts().get(0));
+        assertInstanceOf(ContactCustom.class, restored.contacts().get(1));
+        assertEquals(ClaimEnum.INFORMANTS, restored.claims().get(0));
     }
 
     @Test
@@ -88,16 +97,18 @@ class CatalogJsonTest {
             .withPlaybook(new PlaybookCustom(
                 "Ghost",
                 Map.of(),
-                List.of(AbilityEnum.ABILITY_2),
-                List.of(ItemEnum.GADGET, new ItemCustom("Lockpicks", "quiet entry", true)),
+                List.of(PlayerAbilityEnum.INFILTRATOR),
+                List.of(ItemEnum.BURGLARY_GEAR, new ItemCustom("Lockpicks", "quiet entry", 0, true)),
+                List.of(PlayerContactEnum.LURK_TELDA),
                 List.of("When you infiltrate")
             ));
 
         Player restored = roundTrip(original, Player.class);
         assertInstanceOf(PlaybookCustom.class, restored.playbook());
         assertEquals("Ghost", restored.playbook().getName());
-        assertEquals(ItemEnum.GADGET, restored.playbook().getAvailableItems().get(0));
+        assertEquals(ItemEnum.BURGLARY_GEAR, restored.playbook().getAvailableItems().get(0));
         assertInstanceOf(ItemCustom.class, restored.playbook().getAvailableItems().get(1));
+        assertEquals(PlayerContactEnum.LURK_TELDA, restored.playbook().getAvailableContacts().get(0));
     }
 
     @Test

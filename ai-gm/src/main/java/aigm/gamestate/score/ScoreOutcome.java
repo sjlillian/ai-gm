@@ -1,5 +1,6 @@
 package aigm.gamestate.score;
 
+import aigm.gamestate.campaign.Entanglement;
 import lombok.Data;
 
 @Data
@@ -9,7 +10,7 @@ public class ScoreOutcome {
     private int coinGained;
     private int repGained;
     private int heatGained;
-    private String entanglement;
+    private Entanglement entanglement;
     private String notes;
 
     public ScoreOutcome() {
@@ -17,11 +18,11 @@ public class ScoreOutcome {
         this.coinGained = 0;
         this.repGained = 0;
         this.heatGained = 0;
-        this.entanglement = "";
+        this.entanglement = null;
         this.notes = "";
     }
 
-    public ScoreOutcome(int targetTier, int coinGained, int repGained, int heatGained, String entanglement, String notes) {
+    public ScoreOutcome(int targetTier, int coinGained, int repGained, int heatGained, Entanglement entanglement, String notes) {
         this.targetTier = targetTier;
         this.coinGained = coinGained;
         this.repGained = repGained;

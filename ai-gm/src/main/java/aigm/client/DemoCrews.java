@@ -11,12 +11,15 @@ import aigm.gamestate.campaign.CrewTypeEnum;
 import aigm.gamestate.campaign.Heat;
 import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Advancement;
+import aigm.gamestate.player.Background;
 import aigm.gamestate.player.Harm;
+import aigm.gamestate.player.Heritage;
 import aigm.gamestate.player.Loadout;
 import aigm.gamestate.player.PlaybookEnum;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.player.Trauma;
 import aigm.gamestate.player.Vice;
+import aigm.gamestate.player.ViceKind;
 
 /** Shared demo crew for CLI / starter smoke tests. */
 public final class DemoCrews {
@@ -26,9 +29,9 @@ public final class DemoCrews {
     public static Crew nightspires() {
         Player scoundrel = new Player(
             "Ilyas",
-            "Akoros",
-            "Underworld",
-            new Vice("Gambling", "The Six Towers dens"),
+            Heritage.AKOROS,
+            Background.UNDERWORLD,
+            new Vice(ViceKind.GAMBLING, "The Six Towers dens"),
             new Trauma(),
             Map.of(
                 Action.PROWL, 2,
@@ -41,7 +44,9 @@ public final class DemoCrews {
             PlaybookEnum.LURK,
             List.<Ability>of(),
             new Advancement(),
-            new Loadout()
+            new Loadout(),
+            null,
+            null
         );
 
         return new Crew(
@@ -54,6 +59,7 @@ public final class DemoCrews {
             new Heat(),
             new CrewStanding(),
             new Clock("Crew XP", Crew.CREW_XP_BOXES),
+            List.of(),
             List.of(),
             List.of(),
             List.of(),

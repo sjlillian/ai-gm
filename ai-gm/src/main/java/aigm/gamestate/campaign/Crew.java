@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import aigm.gamestate.Ability;
 import aigm.gamestate.Clock;
+import aigm.gamestate.Contact;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.score.Score;
 
@@ -29,6 +30,7 @@ public record Crew(
     List<Claim> claims,
     List<Score> scores,
     List<Clock> clocks,
+    List<Cohort> cohorts,
     Map<String, RelationshipStatus> factionStatuses
 ) {
 
@@ -43,6 +45,7 @@ public record Crew(
         claims = List.copyOf(claims);
         scores = List.copyOf(scores);
         clocks = List.copyOf(clocks);
+        cohorts = List.copyOf(cohorts);
         factionStatuses = Map.copyOf(factionStatuses);
         coin = Math.max(0, coin);
     }
@@ -139,6 +142,12 @@ public record Crew(
         return withContacts(updated);
     }
 
+    public Crew addCohort(Cohort cohort) {
+        List<Cohort> updated = new ArrayList<>(cohorts);
+        updated.add(cohort);
+        return withCohorts(updated);
+    }
+
     public Crew addClaim(Claim claim) {
         List<Claim> updated = new ArrayList<>(claims);
         updated.add(claim);
@@ -182,50 +191,54 @@ public record Crew(
     }
 
     private Crew withMembers(List<Player> v) {
-        return new Crew(name, type, lair, huntingGrounds, v, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, v, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withCoin(int v) {
-        return new Crew(name, type, lair, huntingGrounds, members, v, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, v, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withHeat(Heat v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, v, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, v, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withCrewStanding(CrewStanding v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, v, crewXP, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, v, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withCrewXP(Clock v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, v, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, v, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withAbilities(List<Ability> v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, v, upgrades, contacts, claims, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, v, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withUpgrades(List<Upgrade> v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, v, contacts, claims, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, v, contacts, claims, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withContacts(List<Contact> v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, v, claims, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, v, claims, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withClaims(List<Claim> v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, v, scores, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, v, scores, clocks, cohorts, factionStatuses);
     }
 
     private Crew withScores(List<Score> v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, v, clocks, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, v, clocks, cohorts, factionStatuses);
     }
 
     private Crew withClocks(List<Clock> v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, v, factionStatuses);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, v, cohorts, factionStatuses);
+    }
+
+    private Crew withCohorts(List<Cohort> v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, v, factionStatuses);
     }
 
     private Crew withFactionStatuses(Map<String, RelationshipStatus> v) {
-        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, v);
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, v);
     }
 }

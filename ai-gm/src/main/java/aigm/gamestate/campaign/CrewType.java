@@ -3,6 +3,7 @@ package aigm.gamestate.campaign;
 import java.util.List;
 
 import aigm.gamestate.Ability;
+import aigm.gamestate.Contact;
 
 public interface CrewType {
 
@@ -10,6 +11,7 @@ public interface CrewType {
     String getXPTrigger();
     List<Upgrade> getUpgrades();
     List<Ability> getAbilities();
-    List<Claim> getClaims();    
+    List<Contact> getContacts();
+    List<Claim> getClaims();
 
 }

@@ -4,7 +4,7 @@ public enum ScoreType {
 
     ASSAULT("Do violence to a target.", "The point of attack."),
     DECEPTION("Lure, trick, or manipulate.", "The method of deception."),
-    STEALTH("Tresspass unseen.", "The point of infiltration."),
+    STEALTH("Trespass unseen.", "The point of infiltration."),
     OCCULT("Engage a supernatural power.", "The arcane method."),
     SOCIAL("Negotiate, bargain, or persuade.", "The social connection."),
     TRANSPORT("Carry cargo or people through danger.", "The route and means.");

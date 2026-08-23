@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import aigm.gamestate.Ability;
+import aigm.gamestate.Contact;
 import aigm.gamestate.campaign.Claim;
 import aigm.gamestate.campaign.CrewType;
 import aigm.gamestate.campaign.Upgrade;
@@ -35,6 +36,7 @@ public final class GameDataConverter {
         SimpleModule catalog = new SimpleModule("bitd-catalog");
         catalog.addDeserializer(CrewType.class, new CatalogDeserializers.CrewTypeDeserializer());
         catalog.addDeserializer(Ability.class, new CatalogDeserializers.AbilityDeserializer());
+        catalog.addDeserializer(Contact.class, new CatalogDeserializers.ContactDeserializer());
         catalog.addDeserializer(Upgrade.class, new CatalogDeserializers.UpgradeDeserializer());
         catalog.addDeserializer(Claim.class, new CatalogDeserializers.ClaimDeserializer());
         catalog.addDeserializer(Playbook.class, new CatalogDeserializers.PlaybookDeserializer());

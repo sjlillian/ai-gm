@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import aigm.gamestate.Ability;
+import aigm.gamestate.Contact;
 
 public interface Playbook {
 
@@ -11,6 +12,7 @@ public interface Playbook {
     Map<Action, Integer> getStartingActionRatings();
     List<Ability> getAvailableAbilities();
     List<Item> getAvailableItems();
+    List<Contact> getAvailableContacts();
     List<String> getXpTriggers();
 
 }

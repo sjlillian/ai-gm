@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import aigm.gamestate.Ability;
+import aigm.gamestate.Contact;
 
 public record Player(
     String name,
-    String heritage,
-    String background,
+    Heritage heritage,
+    Background background,
     Vice vice,
     Trauma trauma,
     Map<Action, Integer> actionRatings,
@@ -19,7 +20,9 @@ public record Player(
     Playbook playbook,
     List<Ability> abilities,
     Advancement advancement,
-    Loadout loadout
+    Loadout loadout,
+    Contact friend,
+    Contact rival
 ) {
 
     public static final int COIN_CAP = 4;
@@ -37,15 +40,15 @@ public record Player(
     }
 
     public Player withName(String name) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withTrauma(Trauma trauma) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withActionRatings(Map<Action, Integer> actionRatings) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withActionRating(Action action, int newRating) {
@@ -56,41 +59,49 @@ public record Player(
     }
 
     public Player withHarm(Harm harm) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withCoin(int coin) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withStash(int stash) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withPlaybook(Playbook playbook) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withVice(Vice vice) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withAbilities(List<Ability> abilities) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withAdvancement(Advancement advancement) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     public Player withLoadout(Loadout loadout) {
-        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
+    }
+
+    public Player withFriend(Contact friend) {
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
+    }
+
+    public Player withRival(Contact rival) {
+        return copy(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 
     private static Player copy(
         String name,
-        String heritage,
-        String background,
+        Heritage heritage,
+        Background background,
         Vice vice,
         Trauma trauma,
         Map<Action, Integer> actionRatings,
@@ -100,8 +111,10 @@ public record Player(
         Playbook playbook,
         List<Ability> abilities,
         Advancement advancement,
-        Loadout loadout
+        Loadout loadout,
+        Contact friend,
+        Contact rival
     ) {
-        return new Player(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout);
+        return new Player(name, heritage, background, vice, trauma, actionRatings, harm, coin, stash, playbook, abilities, advancement, loadout, friend, rival);
     }
 }

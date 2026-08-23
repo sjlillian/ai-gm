@@ -78,7 +78,7 @@ public class ScoreImplemented implements ScoreWorkflow {
             payoff.coin(),
             payoff.rep(),
             heat.heat(),
-            "",
+            null,
             notes
         ));
     }

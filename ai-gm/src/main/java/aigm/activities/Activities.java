@@ -4,6 +4,7 @@ import java.util.List;
 
 import aigm.gamestate.DiceRoll;
 import aigm.gamestate.campaign.Heat;
+import aigm.gamestate.campaign.Entanglement;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
@@ -72,7 +73,7 @@ public interface Activities {
     record EntanglementResult(
         String name,
         String description,
-        List<String> options,
+        List<Entanglement> options,
         int roll,
         String heatColumn
     ) {

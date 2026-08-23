@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import aigm.gamestate.DiceRoll;
+import aigm.gamestate.campaign.Entanglement;
 import aigm.gamestate.campaign.Heat;
 
 /**
@@ -147,87 +148,45 @@ public class ActivitiesImpl implements Activities {
      */
     private EntanglementResult entanglementFor(int heat, int roll) {
         String column;
-        String[] row;
+        List<Entanglement> options;
         if (heat <= 3) {
             column = "HEAT 0-3";
-            row = switch (roll) {
-                case 1, 2, 3 -> new String[] {"Gang Trouble", "The Usual Suspects"};
-                case 4, 5 -> new String[] {"Rivals", "Unquiet Dead"};
-                default -> new String[] {"Cooperation"};
+            options = switch (roll) {
+                case 1, 2, 3 -> List.of(Entanglement.GANG_TROUBLE, Entanglement.THE_USUAL_SUSPECTS);
+                case 4, 5 -> List.of(Entanglement.RIVALS, Entanglement.UNQUIET_DEAD);
+                default -> List.of(Entanglement.COOPERATION);
             };
         } else if (heat <= 5) {
             column = "HEAT 4/5";
-            row = switch (roll) {
-                case 1, 2, 3 -> new String[] {"Gang Trouble", "Questioning"};
-                case 4, 5 -> new String[] {"Reprisals", "Unquiet Dead"};
-                default -> new String[] {"Show of Force"};
+            options = switch (roll) {
+                case 1, 2, 3 -> List.of(Entanglement.GANG_TROUBLE, Entanglement.QUESTIONING);
+                case 4, 5 -> List.of(Entanglement.REPRISALS, Entanglement.UNQUIET_DEAD);
+                default -> List.of(Entanglement.SHOW_OF_FORCE);
             };
         } else {
             column = "HEAT 6+";
-            row = switch (roll) {
-                case 1, 2, 3 -> new String[] {"Flipped", "Interrogation"};
-                case 4, 5 -> new String[] {"Demonic Notice", "Show of Force"};
-                default -> new String[] {"Arrest"};
+            options = switch (roll) {
+                case 1, 2, 3 -> List.of(Entanglement.FLIPPED, Entanglement.INTERROGATION);
+                case 4, 5 -> List.of(Entanglement.DEMONIC_NOTICE, Entanglement.SHOW_OF_FORCE);
+                default -> List.of(Entanglement.ARREST);
             };
         }
 
-        List<String> options = List.of(row);
-        String name = options.size() == 1 ? options.get(0) : options.get(0) + " or " + options.get(1);
+        String name = options.size() == 1
+            ? options.get(0).getName()
+            : options.get(0).getName() + " or " + options.get(1).getName();
         StringBuilder description = new StringBuilder();
         description.append(column).append(", roll ").append(roll).append(". ");
         for (int i = 0; i < options.size(); i++) {
             if (i > 0) {
                 description.append(" OR ");
             }
-            String option = options.get(i);
-            description.append(option).append(": ").append(entanglementText(option));
+            Entanglement option = options.get(i);
+            description.append(option.getName()).append(": ").append(option.getResolution());
         }
         if (options.size() > 1) {
             description.append(" (GM chooses which manifests.)");
         }
         return new EntanglementResult(name, description.toString(), options, roll, column);
-    }
-
-    /** Resolution text from Core Rulebook pp. 151–152. */
-    private static String entanglementText(String name) {
-        return switch (name) {
-            case "Arrest" ->
-                "An Inspector presents a case file to a magistrate. Bluecoats send a detail "
-                    + "(scale at least equal to your wanted level). Pay coin equal to wanted level +3, "
-                    + "hand someone over for arrest (clears heat), or try to evade capture.";
-            case "Cooperation" ->
-                "A +3 status faction asks for a favor. Agree, forfeit 1 rep per Tier of that faction, "
-                    + "or lose 1 status with them. If you have no +3 faction, you avoid entanglements now.";
-            case "Demonic Notice" ->
-                "A demon approaches with a dark offer. Accept their bargain, hide until it loses interest "
-                    + "(forfeit 3 rep), or deal with it another way.";
-            case "Flipped" ->
-                "One of a PC's rivals turns a contact, patron, client, or customers against you due to the heat. "
-                    + "They're loyal to another faction now.";
-            case "Gang Trouble" ->
-                "One of your gangs (or other cohorts) causes trouble due to their flaw(s). Lose face "
-                    + "(forfeit rep equal to Tier +1), make an example of a member, or face reprisals.";
-            case "Interrogation" ->
-                "The Bluecoats round up one of the PCs. Pay them off with 3 coin, or they beat you "
-                    + "(level 2 harm) and you tell them what they want (+3 heat). Resist each separately.";
-            case "Questioning" ->
-                "The Bluecoats grab an NPC crew member or contact. Fortune roll for how much they talk "
-                    + "(1-3: +2 heat, 4/5: +1 heat), or pay 2 coin.";
-            case "Reprisals" ->
-                "An enemy faction moves against you (or a friend, contact, or vice purveyor). Pay 1 rep and "
-                    + "1 coin per Tier of the enemy, allow them to mess with you, or fight back.";
-            case "Rivals" ->
-                "A neutral faction throws their weight around against you, a friend, contact, or vice purveyor. "
-                    + "Forfeit 1 rep or 1 coin per Tier of the rival, or stand up to them and lose 1 status.";
-            case "Show of Force" ->
-                "A faction with negative status plays against your holdings. Give them 1 claim or go to war "
-                    + "(-3 status). If you have no claims, lose 1 hold instead.";
-            case "Unquiet Dead" ->
-                "A rogue spirit is drawn to you. Acquire a Whisper or Rail Jack to banish it, or deal with it yourself.";
-            case "The Usual Suspects" ->
-                "The Bluecoats grab someone on your periphery (volunteer a friend or vice purveyor). Fortune roll "
-                    + "if they resist (1-3: +2 heat, 4/5: level 2 harm), or pay 1 coin.";
-            default -> "See Core Rulebook p. 151–152.";
-        };
     }
 }
