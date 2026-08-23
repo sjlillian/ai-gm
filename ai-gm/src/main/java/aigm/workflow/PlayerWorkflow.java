@@ -1,6 +1,10 @@
 package aigm.workflow;
 
+import aigm.gamestate.DiceRoll;
+import aigm.gamestate.player.Advancement;
+import aigm.gamestate.player.Harm;
 import aigm.gamestate.player.Player;
+import aigm.gamestate.player.Trauma;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
@@ -37,56 +41,66 @@ public interface PlayerWorkflow {
     @WorkflowMethod
     void run(Player player);
 
-    /** Signaled during a score when the PC marks stress (resisting a consequence, etc.). */
+    /** Signaled during a score when the PC marks stress (push, assist, resistance, flashback). */
     @SignalMethod
-    void markStress();
+    void markStress(int amount);
+
+    /** Player chooses the trauma condition after stress overflow. Four trauma conditions retire the PC. */
+    @SignalMethod
+    void markTrauma(Trauma.Condition condition);
 
     /** Signaled during a score, or by an entanglement resolution, when the PC takes harm. */
     @SignalMethod
-    void takeHarm();
+    void takeHarm(String description, Harm.HarmLevel level, boolean armorMarked);
 
     /**
      * Signaled at end of session / during play when XP is marked on a track.
-     * Should check advancement thresholds and may need to expose a "ready to advance"
-     * flag via query, or trigger a separate advancement signal/prompt back to the app.
+     * Attribute XP is 6 boxes; playbook XP is 8.
      */
     @SignalMethod
-    void markXp();
+    void markXp(Advancement.XpTrack track, int amount);
 
     /**
-     * Signaled by DowntimeWorkflow with the result of DowntimeActivities.indulgeVice(...).
-     * Applies stress clearing and, if overindulgence occurred, records the consequence
-     * (may itself add an entanglement or trauma — coordinate with CampaignWorkflow via
-     * a further signal if the overindulgence outcome affects crew-level state).
+     * Signaled by DowntimeWorkflow with the vice fortune roll. Clears that much stress;
+     * overindulgence if the roll exceeds current stress.
      */
     @SignalMethod
-    void resolveVice();
+    void resolveVice(DiceRoll viceRoll);
 
     /**
-     * Signaled by DowntimeWorkflow with the result of DowntimeActivities.recoverHarm(...).
-     * Applies segments to the PC's healing clock; when full, reduces harm per the rules
-     * and rolls over remaining segments.
+     * Signaled by DowntimeWorkflow after a recover activity. Leftover ticks carry over.
      */
     @SignalMethod
-    void applyRecovery();
+    void applyRecovery(int segments, Harm.RecoveryChoice choice);
 
     /**
-     * Signaled by DowntimeWorkflow with the result of DowntimeActivities
-     * .workOnLongTermProject(...). Applies segments to the named personal clock.
+     * Signaled by DowntimeWorkflow with long-term project progress.
      */
     @SignalMethod
-    void applyProjectProgress();
+    void applyProjectProgress(String clockName, int segments);
 
     /** Signaled when a new personal long-term project clock is started. */
     @SignalMethod
-    void startProject();
+    void startProject(String name, int segments);
 
-    /** Signaled by DowntimeWorkflow with the result of DowntimeActivities.acquireAsset(...)
-     *  when the PC (not the crew) is the one acquiring the asset. */
+    /** Signaled when the PC (not the crew) acquires an asset. */
     @SignalMethod
-    void addPersonalAsset();
+    void addPersonalAsset(String asset);
+
+    /** Kill, retire, or replace the character; run() returns instead of continueAsNew. */
+    @SignalMethod
+    void endCharacter();
 
     /** Read-only snapshot for UI/GM tooling. */
     @QueryMethod
     Player getState();
+
+    @QueryMethod
+    java.util.Map<String, aigm.gamestate.Clock> getProjects();
+
+    @QueryMethod
+    java.util.List<String> getPersonalAssets();
+
+    @QueryMethod
+    boolean needsTraumaChoice();
 }

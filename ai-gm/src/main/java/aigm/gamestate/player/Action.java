@@ -4,7 +4,7 @@ public enum Action {
     HUNT(Attribute.INSIGHT),
     STUDY(Attribute.INSIGHT),
     SURVEY(Attribute.INSIGHT),
-    TINKER(Attribute.PROWESS),
+    TINKER(Attribute.INSIGHT),
     FINESSE(Attribute.PROWESS),
     PROWL(Attribute.PROWESS),
     SKIRMISH(Attribute.PROWESS),

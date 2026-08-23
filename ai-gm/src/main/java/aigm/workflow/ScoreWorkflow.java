@@ -8,6 +8,7 @@ import io.temporal.workflow.WorkflowMethod;
 import java.util.Map;
 
 import aigm.gamestate.Clock;
+import aigm.gamestate.Position;
 
 /**
  * Short-lived (relative to Campaign/PC) workflow representing a single score/heist.
@@ -37,10 +38,10 @@ import aigm.gamestate.Clock;
 public interface ScoreWorkflow {
 
     /**
-     * Runs the full score: engagement roll -> plan/detail -> free-form action rolls
-     * against clocks (via signals from the table/app) -> payoff determination.
-     * Returns a ScoreResult (payoff coin, heat generated, notes) that CampaignWorkflow
-     * feeds into the following DowntimeWorkflow.
+     * Runs the score: plan type + one detail, then engagement roll (sets starting
+     * position), then free-form action rolls against clocks, then payoff and heat.
+     * Entanglement is rolled in DowntimeWorkflow after heat is applied.
+     * Returns a ScoreResult that CampaignWorkflow feeds into the following downtime.
      */
     @WorkflowMethod
     ScoreResult run(ScoreRequest request);
@@ -65,7 +66,17 @@ public interface ScoreWorkflow {
     @SignalMethod
     void recordActionRoll(ActionRollResult result);
 
+    /**
+     * Signaled by the GM/app when the score is over. Unblocks run() to resolve
+     * payoff and heat, forward them to CampaignWorkflow, and return.
+     */
+    @SignalMethod
+    void endScore(ScoreEndRequest end);
+
     /** Read-only snapshot of clocks currently active during this score, for UI. */
     @QueryMethod
     Map<String, Clock> getClocks();
+
+    @QueryMethod
+    Position getEngagementPosition();
 }

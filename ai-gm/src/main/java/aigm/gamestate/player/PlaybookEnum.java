@@ -6,6 +6,13 @@ import java.util.Map;
 import aigm.gamestate.Ability;
 
 public enum PlaybookEnum implements Playbook {
+    CUTTER("Cutter", Map.of(), List.of(), List.of(), List.of()),
+    HOUND("Hound", Map.of(), List.of(), List.of(), List.of()),
+    LEECH("Leech", Map.of(), List.of(), List.of(), List.of()),
+    LURK("Lurk", Map.of(), List.of(), List.of(), List.of()),
+    SLIDE("Slide", Map.of(), List.of(), List.of(), List.of()),
+    SPIDER("Spider", Map.of(), List.of(), List.of(), List.of()),
+    WHISPER("Whisper", Map.of(), List.of(), List.of(), List.of()),
     CUSTOM("Custom", Map.of(), List.of(), List.of(), List.of());
 
     private final String name;

@@ -5,18 +5,19 @@ import java.util.List;
 import aigm.gamestate.Ability;
 
 public enum CrewTypeEnum implements CrewType {
-    CUSTOM,
-    HAWK,
-    LANCER,
-    RAVEN,
-    SHADOW,
-    WRAITH;
+    ASSASSINS,
+    BRAVOS,
+    CULT,
+    HAWKERS,
+    SHADOWS,
+    SMUGGLERS,
+    CUSTOM;
 
-    private String type;
-    private String xpTrigger;
-    private List<Upgrade> upgrades;
-    private List<Ability> abilities;
-    private List<Claim> claims;
+    private final String type;
+    private final String xpTrigger;
+    private final List<Upgrade> upgrades;
+    private final List<Ability> abilities;
+    private final List<Claim> claims;
 
     CrewTypeEnum() {
         this.type = this.name();
@@ -50,5 +51,4 @@ public enum CrewTypeEnum implements CrewType {
     public List<Claim> getClaims() {
         return claims;
     }
-
 }

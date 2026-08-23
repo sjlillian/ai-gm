@@ -1,7 +1,9 @@
 package aigm.gamestate.campaign;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import aigm.gamestate.Ability;
@@ -12,6 +14,8 @@ import aigm.gamestate.score.Score;
 public record Crew(
     String name,
     CrewType type,
+    String lair,
+    String huntingGrounds,
     List<Player> members,
     int coin,
     Heat heat,
@@ -23,8 +27,11 @@ public record Crew(
     List<Claim> claims,
     List<Score> scores,
     List<Clock> clocks,
-    Optional<String> atWarWith
+    Map<String, RelationshipStatus> factionStatuses
 ) {
+
+    public static final int CREW_XP_BOXES = 8;
+    public static final int COIN_CAP_WITHOUT_VAULT = 4;
 
     public Crew {
         members = List.copyOf(members);
@@ -34,9 +41,9 @@ public record Crew(
         claims = List.copyOf(claims);
         scores = List.copyOf(scores);
         clocks = List.copyOf(clocks);
+        factionStatuses = Map.copyOf(factionStatuses);
+        coin = Math.max(0, coin);
     }
-
-    // ---- members ----
 
     public Crew addMember(Player player) {
         List<Player> updated = new ArrayList<>(members);
@@ -50,48 +57,37 @@ public record Crew(
         return withMembers(updated);
     }
 
-    // ---- coin ----
-
     public Crew addCoin(int amount) {
         return withCoin(coin + amount);
     }
 
     /** Returns empty if the crew can't afford it, instead of allowing negative coin. */
     public Optional<Crew> spendCoin(int amount) {
-        if (coin < amount) return Optional.empty();
+        if (amount < 0 || coin < amount) {
+            return Optional.empty();
+        }
         return Optional.of(withCoin(coin - amount));
     }
 
-    // ---- heat / wanted level ----
-
-    public Crew addHeat(int amount) {
-        return withHeat(heat.addHeat(amount));
+    public Crew updateHeat(int delta) {
+        return withHeat(heat.updateHeat(delta));
     }
-
-    /** Incarceration: wanted level -1, heat cleared. The only way wanted level goes down. */
-    public Crew incarcerate() {
-        return withHeat(heat.clearOnIncarceration());
-    }
-
-    // ---- tier / hold advancement ----
 
     /**
-     * Attempts to advance per the fill-rep rule: if hold is weak, it becomes strong
-     * (free). If hold is already strong, spend coin to advance Tier instead. No-ops
-     * if rep isn't full yet, or if strong-hold-but-can't-afford-Tier (crew just sits
-     * capped until they can pay, per the rules).
+     * Fill-rep advancement: weak hold becomes strong (free). Strong hold spends
+     * coin equal to new tier × 8 to go up a tier (hold becomes weak). No-ops if
+     * the rep track is not full, or if the crew cannot afford the coin.
      */
     public Crew tryAdvance() {
-        if (!crewStanding.repFull()) {
-            return this;
-        }
-        if (crewStanding.hold() == Hold.WEAK) {
+        if (crewStanding.canAdvanceHold()) {
             return withCrewStanding(crewStanding.advanceHold());
         }
-        int cost = crewStanding.tierAdvancementCost();
-        return spendCoin(cost)
-                .map(paid -> paid.withCrewStanding(paid.crewStanding.advanceTier()))
+        if (crewStanding.canAdvanceTier()) {
+            return spendCoin(crewStanding.tierAdvancementCost())
+                .map(paid -> paid.withCrewStanding(crewStanding.advanceTier()))
                 .orElse(this);
+        }
+        return this;
     }
 
     public Crew reduceHold() {
@@ -102,7 +98,9 @@ public record Crew(
         return withCrewStanding(crewStanding.addRep(amount));
     }
 
-    // ---- crew advancement (crewXP) ----
+    public Crew addTurf(int amount) {
+        return withCrewStanding(crewStanding.addTurf(amount));
+    }
 
     public boolean readyToAdvance() {
         return crewXP.isComplete();
@@ -119,8 +117,6 @@ public record Crew(
     public Crew advanceWithFreeUpgrades(Upgrade first, Upgrade second) {
         return withCrewXP(crewXP.withProgress(0)).addUpgrade(first).addUpgrade(second);
     }
-
-    // ---- abilities / upgrades / contacts / claims / scores / clocks ----
 
     public Crew addAbility(Ability ability) {
         List<Ability> updated = new ArrayList<>(abilities);
@@ -158,32 +154,69 @@ public record Crew(
         return withClocks(updated);
     }
 
-    // ---- war status ----
-
-    public Crew declareWar(String rivalId) {
-        return withAtWarWith(Optional.of(rivalId));
+    public Crew setFactionStatus(String factionId, RelationshipStatus status) {
+        Map<String, RelationshipStatus> updated = new HashMap<>(factionStatuses);
+        updated.put(factionId, status);
+        return withFactionStatuses(updated);
     }
 
-    public Crew endWar() {
-        return withAtWarWith(Optional.empty());
+    public Crew declareWar(String factionId) {
+        return setFactionStatus(factionId, RelationshipStatus.WAR);
+    }
+
+    public Crew endWar(String factionId) {
+        return setFactionStatus(factionId, RelationshipStatus.HOSTILE);
     }
 
     public boolean isAtWar() {
-        return atWarWith.isPresent();
+        return factionStatuses.values().stream().anyMatch(RelationshipStatus::isAtWar);
     }
 
-    // ---- private "with" helpers to avoid a 14-argument constructor call at every site ----
+    private Crew withMembers(List<Player> v) {
+        return new Crew(name, type, lair, huntingGrounds, v, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+    }
 
-    private Crew withMembers(List<Player> v) { return new Crew(name, type, v, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, atWarWith); }
-    private Crew withCoin(int v) { return new Crew(name, type, members, v, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, atWarWith); }
-    private Crew withHeat(Heat v) { return new Crew(name, type, members, coin, v, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, atWarWith); }
-    private Crew withCrewStanding(CrewStanding v) { return new Crew(name, type, members, coin, heat, v, crewXP, abilities, upgrades, contacts, claims, scores, clocks, atWarWith); }
-    private Crew withCrewXP(Clock v) { return new Crew(name, type, members, coin, heat, crewStanding, v, abilities, upgrades, contacts, claims, scores, clocks, atWarWith); }
-    private Crew withAbilities(List<Ability> v) { return new Crew(name, type, members, coin, heat, crewStanding, crewXP, v, upgrades, contacts, claims, scores, clocks, atWarWith); }
-    private Crew withUpgrades(List<Upgrade> v) { return new Crew(name, type, members, coin, heat, crewStanding, crewXP, abilities, v, contacts, claims, scores, clocks, atWarWith); }
-    private Crew withContacts(List<Contact> v) { return new Crew(name, type, members, coin, heat, crewStanding, crewXP, abilities, upgrades, v, claims, scores, clocks, atWarWith); }
-    private Crew withClaims(List<Claim> v) { return new Crew(name, type, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, v, scores, clocks, atWarWith); }
-    private Crew withScores(List<Score> v) { return new Crew(name, type, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, v, clocks, atWarWith); }
-    private Crew withClocks(List<Clock> v) { return new Crew(name, type, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, v, atWarWith); }
-    private Crew withAtWarWith(Optional<String> v) { return new Crew(name, type, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, v); }
+    private Crew withCoin(int v) {
+        return new Crew(name, type, lair, huntingGrounds, members, v, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+    }
+
+    private Crew withHeat(Heat v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, v, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+    }
+
+    private Crew withCrewStanding(CrewStanding v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, v, crewXP, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+    }
+
+    private Crew withCrewXP(Clock v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, v, abilities, upgrades, contacts, claims, scores, clocks, factionStatuses);
+    }
+
+    private Crew withAbilities(List<Ability> v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, v, upgrades, contacts, claims, scores, clocks, factionStatuses);
+    }
+
+    private Crew withUpgrades(List<Upgrade> v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, v, contacts, claims, scores, clocks, factionStatuses);
+    }
+
+    private Crew withContacts(List<Contact> v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, v, claims, scores, clocks, factionStatuses);
+    }
+
+    private Crew withClaims(List<Claim> v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, v, scores, clocks, factionStatuses);
+    }
+
+    private Crew withScores(List<Score> v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, v, clocks, factionStatuses);
+    }
+
+    private Crew withClocks(List<Clock> v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, v, factionStatuses);
+    }
+
+    private Crew withFactionStatuses(Map<String, RelationshipStatus> v) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, v);
+    }
 }

@@ -40,11 +40,11 @@ public interface DowntimeWorkflow {
 
     /**
      * Runs the full downtime phase:
-     *   1. Call DowntimeActivities.rollEntanglement(...) once for the crew, apply/
-     *      narrate the result.
+     *   1. Call Activities.rollEntanglement(...) once for the crew, apply/narrate
+     *      the result (after score payoff/heat are already on the crew).
      *   2. Workflow.await() for each PC to submit 1-2 (or more, at coin/rep cost)
      *      activity choices via chooseActivity(...).
-     *   3. For each submitted choice, call the matching DowntimeActivities method,
+     *   3. For each submitted choice, call the matching Activities method,
      *      then forward the result via signal to the owning workflow (PC or Crew).
      *   4. Return once all PCs have either submitted or the GM force-closes the phase
      *      (see closeDowntime()).

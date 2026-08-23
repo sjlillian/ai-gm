@@ -6,3 +6,6 @@ ai-gm/.mvn/
 .classpath
 .project
 .settings/
+.context/
+.cursor/
+.agents/

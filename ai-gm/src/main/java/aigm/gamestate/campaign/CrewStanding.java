@@ -2,6 +2,11 @@ package aigm.gamestate.campaign;
 
 import aigm.gamestate.Clock;
 
+/**
+ * Crew starts at Tier 0 with weak hold. Rep track is 12 boxes minus turf (minimum 1).
+ * Filling rep with weak hold becomes strong hold (free). Filling rep with strong hold
+ * lets the crew spend coin equal to new tier × 8 to advance; hold then becomes weak.
+ */
 public record CrewStanding(
     Reputation reputation,
     Tier tier,
@@ -10,11 +15,13 @@ public record CrewStanding(
     int turf
 ) {
 
-    private enum Reputation {
-        AMBITIOUS, BRUTAL, DARING, HONORABLE, PROFESSIONAL, SAVVY, SUBTLE, STRANGE;
+    public static final int BASE_REP_TRACK = 12;
+
+    public enum Reputation {
+        AMBITIOUS, BRUTAL, DARING, HONORABLE, PROFESSIONAL, SAVVY, SUBTLE, STRANGE
     }
 
-    private enum Tier {
+    public enum Tier {
         ZERO, ONE, TWO, THREE, FOUR, FIVE;
 
         public int advancementCost() {
@@ -32,41 +39,58 @@ public record CrewStanding(
         }
     }
 
-    private enum Hold {
-        STRONG, WEAK;
+    public enum Hold {
+        STRONG, WEAK
     }
 
     public CrewStanding() {
-        this(Reputation.AMBITIOUS, Tier.ZERO, Hold.STRONG, new Clock("Rep", 12), 0);
+        this(Reputation.AMBITIOUS, Tier.ZERO, Hold.WEAK, new Clock("Rep", BASE_REP_TRACK), 0);
+    }
+
+    public int repTrackSize() {
+        return Math.max(1, BASE_REP_TRACK - Math.max(0, turf));
     }
 
     public int tierAdvancementCost() {
         return tier.increase().advancementCost();
     }
 
+    public boolean canAdvanceHold() {
+        return rep.isComplete() && hold == Hold.WEAK;
+    }
+
+    public boolean canAdvanceTier() {
+        return rep.isComplete() && hold == Hold.STRONG && tier != Tier.FIVE;
+    }
+
     public CrewStanding addTurf(int amount) {
-        return new CrewStanding(reputation, tier, hold, rep, turf + amount);
+        int newTurf = Math.max(0, turf + amount);
+        int newMax = Math.max(1, BASE_REP_TRACK - newTurf);
+        Clock resized = rep.withMax(newMax);
+        return new CrewStanding(reputation, tier, hold, resized, newTurf);
     }
 
     public CrewStanding addRep(int amount) {
         if (rep.isComplete()) {
-            return new CrewStanding(reputation, tier, Hold.STRONG, new Clock("Rep", 12), turf);
+            return this;
         }
         return new CrewStanding(reputation, tier, hold, rep.tick(amount), turf);
     }
 
+    /** Weak hold → strong hold, then clear the rep track. Coin is not spent. */
     public CrewStanding advanceHold() {
-        if (hold == Hold.WEAK) {
-            return new CrewStanding(reputation, tier, Hold.STRONG, rep, turf);
+        if (!canAdvanceHold()) {
+            return this;
         }
-        return this;
+        return new CrewStanding(reputation, tier, Hold.STRONG, resetRep(), turf);
     }
 
+    /** Strong hold → next tier and weak hold, then clear the rep track. Caller must spend coin first. */
     public CrewStanding advanceTier() {
-        if (hold == Hold.STRONG) {
-            return new CrewStanding(reputation, tier.increase(), Hold.WEAK, rep, turf);
+        if (!canAdvanceTier()) {
+            return this;
         }
-        return this;
+        return new CrewStanding(reputation, tier.increase(), Hold.WEAK, resetRep(), turf);
     }
 
     public CrewStanding reduceHold() {
@@ -78,5 +102,9 @@ public record CrewStanding(
 
     public CrewStanding reduceTier() {
         return new CrewStanding(reputation, tier.decrease(), hold, rep, turf);
+    }
+
+    private Clock resetRep() {
+        return new Clock("Rep", 0, repTrackSize());
     }
 }

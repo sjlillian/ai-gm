@@ -5,25 +5,28 @@ import lombok.Data;
 @Data
 public class ScoreOutcome {
 
-    private boolean success;
-    private int heatGained;
+    private int targetTier;
+    private int coinGained;
     private int repGained;
-    private int xpGained;
-    private int coinsGained;
+    private int heatGained;
+    private String entanglement;
+    private String notes;
 
     public ScoreOutcome() {
-        this.success = false;
-        this.heatGained = 0;
+        this.targetTier = 0;
+        this.coinGained = 0;
         this.repGained = 0;
-        this.xpGained = 0;
-        this.coinsGained = 0;
+        this.heatGained = 0;
+        this.entanglement = "";
+        this.notes = "";
     }
 
-    public ScoreOutcome(boolean success, int heatGained, int repGained, int xpGained, int coinsGained) {
-        this.success = success;
-        this.heatGained = heatGained;
+    public ScoreOutcome(int targetTier, int coinGained, int repGained, int heatGained, String entanglement, String notes) {
+        this.targetTier = targetTier;
+        this.coinGained = coinGained;
         this.repGained = repGained;
-        this.xpGained = xpGained;
-        this.coinsGained = coinsGained;
+        this.heatGained = heatGained;
+        this.entanglement = entanglement;
+        this.notes = notes;
     }
 }

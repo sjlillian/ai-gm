@@ -18,17 +18,30 @@ public record Heat(Clock heat, WantedLevel wantedLevel) {
         }
     }
 
-    private final static Clock DEFAULT_HEAT_CLOCK = new Clock("Heat", 0, 9);
+    public static final int HEAT_BOXES = 9;
+
+    private static final Clock DEFAULT_HEAT_CLOCK = new Clock("Heat", 0, HEAT_BOXES);
 
     public Heat() {
         this(DEFAULT_HEAT_CLOCK, WantedLevel.ZERO);
     }
 
     public Heat updateHeat(int delta) {
-        Clock newHeat = heat.tick(delta);
-        WantedLevel newWantedLevel = wantedLevel;
-        if (newHeat.isComplete())
-            return new Heat(DEFAULT_HEAT_CLOCK, wantedLevel.increase());
-        return new Heat(newHeat, newWantedLevel);
+        if (wantedLevel == WantedLevel.FOUR) {
+            return new Heat(heat.tick(delta), wantedLevel);
+        }
+
+        Clock.Overflow overflow = heat.tickOverflowing(delta);
+        WantedLevel wanted = wantedLevel;
+        Clock remaining = overflow.clock();
+
+        for (int i = 0; i < overflow.completions(); i++) {
+            if (wanted == WantedLevel.FOUR) {
+                return new Heat(new Clock(heat.name(), HEAT_BOXES, HEAT_BOXES), wanted);
+            }
+            wanted = wanted.increase();
+        }
+
+        return new Heat(remaining, wanted);
     }
 }
