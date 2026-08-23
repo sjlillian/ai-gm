@@ -44,4 +44,8 @@ public record Heat(Clock heat, WantedLevel wantedLevel) {
 
         return new Heat(remaining, wanted);
     }
+
+    public Heat clearOnIncarceration() {
+        return new Heat(DEFAULT_HEAT_CLOCK, wantedLevel.decrease());
+    }
 }
