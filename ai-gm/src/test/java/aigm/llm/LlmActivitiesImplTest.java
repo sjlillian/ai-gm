@@ -1,4 +1,4 @@
-package aigm.llm.gm;
+package aigm.llm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.player.Action;
-import aigm.llm.stub.StubLlmClient;
 
 class LlmActivitiesImplTest {
 

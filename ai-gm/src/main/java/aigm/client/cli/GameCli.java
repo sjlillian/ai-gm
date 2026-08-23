@@ -2,15 +2,13 @@ package aigm.client.cli;
 
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
 
 import aigm.client.CampaignSnapshot;
 import aigm.client.DemoCrews;
-import aigm.client.EndScoreCommand;
-import aigm.client.GameClient;
-import aigm.client.StartScoreCommand;
-import aigm.client.temporal.TemporalGameClient;
+import aigm.client.TemporalGameClient;
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.campaign.CrewStanding;
@@ -18,22 +16,23 @@ import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.player.Trauma;
 import aigm.gamestate.score.ScoreType;
-import aigm.llm.gm.LlmActivities;
+import aigm.llm.LlmActivities;
 import aigm.workflow.ActionRollResult;
 import aigm.workflow.CampaignWorkflow;
 import aigm.workflow.DowntimeActivityChoice;
+import aigm.workflow.ScoreEndRequest;
+import aigm.workflow.ScoreRequest;
 
 /**
- * Plain stdin/stdout adapter over {@link GameClient}.
- * Discord/web should call {@link GameClient} directly — not this class.
+ * Plain stdin/stdout adapter over {@link TemporalGameClient}.
  */
 public final class GameCli {
 
-    private final GameClient game;
+    private final TemporalGameClient game;
     private final Scanner in;
     private final PrintStream out;
 
-    public GameCli(GameClient game, Scanner in, PrintStream out) {
+    public GameCli(TemporalGameClient game, Scanner in, PrintStream out) {
         this.game = game;
         this.in = in;
         this.out = out;
@@ -91,14 +90,16 @@ public final class GameCli {
             case "score" -> {
                 require(p, 6, "score <title> <PLAN> <target> <tier> <dice>");
                 ScoreType plan = ScoreType.valueOf(p[2].toUpperCase(Locale.ROOT));
-                game.startScore(new StartScoreCommand(
+                game.startScore(new ScoreRequest(
                     null,
                     p[1],
                     plan,
                     plan.name(),
                     p[3],
                     parseTier(p[4]),
-                    Integer.parseInt(p[5])
+                    Integer.parseInt(p[5]),
+                    null,
+                    List.of()
                 ));
                 out.println("score started");
                 printStatus();
@@ -139,7 +140,7 @@ public final class GameCli {
                 int heat = p.length > 2 ? Integer.parseInt(p[2]) : 2;
                 CampaignSnapshot snap = game.snapshot();
                 int tier = snap.crew().crewStanding().tier().ordinal();
-                game.endScore(EndScoreCommand.simple(success, tier, heat));
+                game.endScore(ScoreEndRequest.simple(success, tier, heat));
                 out.println("score ended");
                 printStatus();
             }

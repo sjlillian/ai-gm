@@ -13,7 +13,7 @@ import aigm.gamestate.Position;
 import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Advancement;
 import aigm.gamestate.score.ScoreOutcome;
-import aigm.llm.gm.LlmActivities;
+import aigm.llm.LlmActivities;
 import io.temporal.workflow.Workflow;
 
 /**

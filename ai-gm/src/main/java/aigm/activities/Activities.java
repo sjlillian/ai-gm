@@ -9,7 +9,7 @@ import io.temporal.activity.ActivityMethod;
 
 /**
  * Non-deterministic work for the campaign: dice and rulebook table lookups.
- * GM adjudication and narration live in {@link aigm.llm.gm.LlmActivities}.
+ * GM adjudication and narration live in {@link aigm.llm.LlmActivities}.
  * <p>
  * Deterministic sheet mutations (stress, coin, clocks) belong in workflow
  * signal handlers, not here. Player input belongs on workflow signals, not

@@ -1,10 +1,4 @@
-package aigm.llm.stub;
-
-import aigm.llm.LlmClient;
-import aigm.llm.LlmClientProvider;
-import aigm.llm.LlmRequest;
-import aigm.llm.LlmResponse;
-import aigm.llm.LlmSettings;
+package aigm.llm;
 
 /**
  * Deterministic stand-in used when no model is configured. Lets the worker
@@ -30,17 +24,5 @@ public final class StubLlmClient implements LlmClient {
     @Override
     public String describe() {
         return "StubLlmClient (no remote model)";
-    }
-
-    public static final class Provider implements LlmClientProvider {
-        @Override
-        public String id() {
-            return "stub";
-        }
-
-        @Override
-        public LlmClient create(LlmSettings settings) {
-            return new StubLlmClient();
-        }
     }
 }

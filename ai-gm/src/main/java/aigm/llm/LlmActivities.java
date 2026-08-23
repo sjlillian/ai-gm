@@ -1,17 +1,15 @@
-package aigm.llm.gm;
+package aigm.llm;
 
 import java.util.List;
 
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.player.Action;
-import aigm.llm.LlmRequest;
-import aigm.llm.LlmResponse;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
 /**
- * Temporal activities that call an {@link aigm.llm.LlmClient}. Register
+ * Temporal activities that call an {@link LlmClient}. Register
  * {@link LlmActivitiesImpl} on the worker next to dice {@code ActivitiesImpl}.
  */
 @ActivityInterface
@@ -22,10 +20,6 @@ public interface LlmActivities {
 
     @ActivityMethod
     String narrate(String situation, String mechanicalOutcome);
-
-    /** Escape hatch: send any prompt through the configured client. */
-    @ActivityMethod
-    LlmResponse complete(LlmRequest request);
 
     record Adjudication(
         Action action,

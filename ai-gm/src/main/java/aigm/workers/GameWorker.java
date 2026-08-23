@@ -5,7 +5,7 @@ import aigm.activities.ActivitiesImpl;
 import aigm.gamestate.json.GameDataConverter;
 import aigm.llm.LlmClient;
 import aigm.llm.LlmClients;
-import aigm.llm.gm.LlmActivitiesImpl;
+import aigm.llm.LlmActivitiesImpl;
 import aigm.workflow.CampaignImplemented;
 import aigm.workflow.DowntimeImplemented;
 import aigm.workflow.PlayerImplemented;

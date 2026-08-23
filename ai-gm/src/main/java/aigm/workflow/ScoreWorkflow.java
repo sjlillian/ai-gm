@@ -12,7 +12,7 @@ import aigm.gamestate.Clock;
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.player.Action;
-import aigm.llm.gm.LlmActivities;
+import aigm.llm.LlmActivities;
 
 /**
  * Short-lived (relative to Campaign/PC) workflow representing a single score/heist.

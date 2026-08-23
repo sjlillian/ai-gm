@@ -5,12 +5,12 @@ import java.time.Duration;
 import aigm.activities.Activities;
 import aigm.gamestate.DiceRoll;
 import aigm.gamestate.Position;
-import aigm.llm.gm.LlmActivities;
+import aigm.llm.LlmActivities;
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.workflow.Workflow;
 
-final class WorkflowSupport {
+public final class WorkflowSupport {
 
     static final String TASK_QUEUE = "GAME_TASK_QUEUE";
 
@@ -46,7 +46,15 @@ final class WorkflowSupport {
         );
     }
 
-    static String pcWorkflowId(String campaignWorkflowId, String pcId) {
+    public static String scoreWorkflowId(String campaignWorkflowId, int cycleNumber) {
+        return "score-" + campaignWorkflowId + "-" + cycleNumber;
+    }
+
+    public static String downtimeWorkflowId(String campaignWorkflowId, int cycleNumber) {
+        return "downtime-" + campaignWorkflowId + "-" + cycleNumber;
+    }
+
+    public static String pcWorkflowId(String campaignWorkflowId, String pcId) {
         return "pc-" + campaignWorkflowId + "-" + pcId;
     }
 

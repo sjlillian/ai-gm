@@ -1,4 +1,4 @@
-package aigm.llm.openai;
+package aigm.llm;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,10 +12,6 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import aigm.llm.LlmException;
-import aigm.llm.LlmRequest;
-import aigm.llm.LlmResponse;
-import aigm.llm.LlmSettings;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;

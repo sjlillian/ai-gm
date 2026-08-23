@@ -1,15 +1,10 @@
-package aigm.client.temporal;
+package aigm.client;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import aigm.TaskQueues;
-import aigm.client.CampaignSnapshot;
-import aigm.client.EndScoreCommand;
-import aigm.client.GameClient;
-import aigm.client.StartScoreCommand;
-import aigm.client.WorkflowIds;
 import aigm.gamestate.Clock;
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
@@ -18,7 +13,7 @@ import aigm.gamestate.json.GameDataConverter;
 import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.player.Trauma;
-import aigm.llm.gm.LlmActivities;
+import aigm.llm.LlmActivities;
 import aigm.workflow.ActionRollResult;
 import aigm.workflow.CampaignState;
 import aigm.workflow.CampaignWorkflow;
@@ -28,16 +23,16 @@ import aigm.workflow.PlayerWorkflow;
 import aigm.workflow.ScoreEndRequest;
 import aigm.workflow.ScoreRequest;
 import aigm.workflow.ScoreWorkflow;
+import aigm.workflow.WorkflowSupport;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 
 /**
- * {@link GameClient} backed by Temporal workflow stubs.
- * UI layers (CLI, Discord, web) should depend on {@link GameClient} only.
+ * Talks to Temporal workflow stubs. CLI (and later Discord/web) call this.
  */
-public final class TemporalGameClient implements GameClient {
+public final class TemporalGameClient implements AutoCloseable {
 
     private final WorkflowServiceStubs service;
     private final WorkflowClient client;
@@ -61,7 +56,6 @@ public final class TemporalGameClient implements GameClient {
         this.ownsService = false;
     }
 
-    @Override
     public String startCampaign(Crew crew, String campaignIdOrNull) {
         String workflowId = campaignIdOrNull == null || campaignIdOrNull.isBlank()
             ? "campaign-" + UUID.randomUUID()
@@ -80,7 +74,6 @@ public final class TemporalGameClient implements GameClient {
         return workflowId;
     }
 
-    @Override
     public void attach(String campaignWorkflowId) {
         if (campaignWorkflowId == null || campaignWorkflowId.isBlank()) {
             throw new IllegalArgumentException("campaignWorkflowId required");
@@ -89,13 +82,11 @@ public final class TemporalGameClient implements GameClient {
         campaign().getPhase();
     }
 
-    @Override
     public String campaignId() {
         requireAttached();
         return campaignWorkflowId;
     }
 
-    @Override
     public CampaignSnapshot snapshot() {
         requireAttached();
         CampaignWorkflow campaign = campaign();
@@ -113,7 +104,7 @@ public final class TemporalGameClient implements GameClient {
         Map<String, List<DowntimeActivityChoice>> downtimeChoices = Map.of();
 
         if (phase == CampaignWorkflow.Phase.SCORE) {
-            scoreId = WorkflowIds.score(campaignWorkflowId, cycle);
+            scoreId = WorkflowSupport.scoreWorkflowId(campaignWorkflowId, cycle);
             try {
                 ScoreWorkflow score = scoreStub(scoreId);
                 engagement = score.getEngagementPosition();
@@ -123,7 +114,7 @@ public final class TemporalGameClient implements GameClient {
                 // Child may not be queryable immediately after the phase flip.
             }
         } else if (phase == CampaignWorkflow.Phase.DOWNTIME) {
-            downtimeId = WorkflowIds.downtime(campaignWorkflowId, cycle);
+            downtimeId = WorkflowSupport.downtimeWorkflowId(campaignWorkflowId, cycle);
             try {
                 downtimeChoices = downtimeStub(downtimeId).getSubmittedActivities();
             } catch (RuntimeException ignored) {
@@ -147,30 +138,27 @@ public final class TemporalGameClient implements GameClient {
         );
     }
 
-    @Override
-    public void startScore(StartScoreCommand command) {
+    public void startScore(ScoreRequest request) {
         requireAttached();
-        ScoreRequest request = new ScoreRequest(
-            blankTo(command.scoreId(), "score-" + UUID.randomUUID()),
-            command.title(),
-            command.planType(),
-            command.planDetail(),
-            command.targetName(),
-            command.targetTier(),
-            command.engagementDice(),
+        ScoreRequest filled = new ScoreRequest(
+            blankTo(request.scoreId(), "score-" + UUID.randomUUID()),
+            request.title(),
+            request.planType(),
+            request.planDetail(),
+            request.targetName(),
+            request.targetTier(),
+            request.engagementDice(),
             campaignWorkflowId,
-            List.of()
+            request.pcWorkflowIds()
         );
-        campaign().startScore(request);
+        campaign().startScore(filled);
         sleepQuietly(500);
     }
 
-    @Override
     public LlmActivities.Adjudication adjudicate(String situation, String approach, Action action) {
         return activeScore().adjudicate(situation, approach, action);
     }
 
-    @Override
     public ActionRollResult resolveAction(
         String pcId,
         Action action,
@@ -186,44 +174,32 @@ public final class TemporalGameClient implements GameClient {
         );
     }
 
-    @Override
     public void tickClock(String clockId, int segments) {
         activeScore().tickClock(clockId, segments);
     }
 
-    @Override
-    public void endScore(EndScoreCommand command) {
-        activeScore().endScore(new ScoreEndRequest(
-            command.success(),
-            command.atWar(),
-            command.crewTier(),
-            command.heatContext()
-        ));
+    public void endScore(ScoreEndRequest request) {
+        activeScore().endScore(request);
         sleepQuietly(500);
     }
 
-    @Override
     public void chooseDowntimeActivity(String pcId, DowntimeActivityChoice choice) {
         activeDowntime().chooseActivity(pcId, choice);
     }
 
-    @Override
     public void closeDowntime() {
         activeDowntime().closeDowntime();
         sleepQuietly(500);
     }
 
-    @Override
     public Player getPlayer(String pcNameOrWorkflowId) {
         return playerStub(pcNameOrWorkflowId).getState();
     }
 
-    @Override
     public void markTrauma(String pcNameOrWorkflowId, Trauma.Condition condition) {
         playerStub(pcNameOrWorkflowId).markTrauma(condition);
     }
 
-    @Override
     public void endCampaign() {
         requireAttached();
         campaign().endCampaign();
@@ -269,7 +245,7 @@ public final class TemporalGameClient implements GameClient {
         requireAttached();
         String id = pcNameOrWorkflowId;
         if (!id.startsWith("pc-")) {
-            id = WorkflowIds.pc(campaignWorkflowId, pcNameOrWorkflowId);
+            id = WorkflowSupport.pcWorkflowId(campaignWorkflowId, pcNameOrWorkflowId);
         }
         return client.newWorkflowStub(PlayerWorkflow.class, id);
     }

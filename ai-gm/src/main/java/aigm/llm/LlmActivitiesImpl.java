@@ -1,4 +1,4 @@
-package aigm.llm.gm;
+package aigm.llm;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,11 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.player.Action;
-import aigm.llm.JsonTexts;
-import aigm.llm.LlmClient;
-import aigm.llm.LlmException;
-import aigm.llm.LlmRequest;
-import aigm.llm.LlmResponse;
 import io.temporal.activity.Activity;
 import io.temporal.failure.ApplicationFailure;
 
@@ -53,11 +48,6 @@ public class LlmActivitiesImpl implements LlmActivities {
         return text;
     }
 
-    @Override
-    public LlmResponse complete(LlmRequest request) {
-        return invoke(request);
-    }
-
     private LlmResponse invoke(LlmRequest request) {
         heartbeat("llm " + client.describe());
         try {
@@ -78,7 +68,7 @@ public class LlmActivitiesImpl implements LlmActivities {
     Adjudication parseAdjudication(String raw, Action chosenAction) {
         JsonNode node;
         try {
-            node = MAPPER.readTree(JsonTexts.extractObject(raw));
+            node = MAPPER.readTree(extractJsonObject(raw));
         } catch (IOException e) {
             throw LlmException.retryable("LLM adjudication was not JSON: " + e.getMessage(), e);
         }
@@ -105,9 +95,22 @@ public class LlmActivitiesImpl implements LlmActivities {
         return new Adjudication(action, position, effect, text(node, "reasoning"), stakes);
     }
 
+    private static String extractJsonObject(String text) {
+        if (text == null || text.isBlank()) {
+            return "{}";
+        }
+        String trimmed = text.trim();
+        int start = trimmed.indexOf('{');
+        int end = trimmed.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            return trimmed.substring(start, end + 1);
+        }
+        return trimmed;
+    }
+
     private static String text(JsonNode node, String field) {
         JsonNode value = node.get(field);
-        return value == null || value.isNull() ? "" : value.asText("");
+        return value == null || value.isNull() ? "" : value.asText();
     }
 
     private static <E extends Enum<E>> E parseEnum(Class<E> type, String raw, E fallback) {

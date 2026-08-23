@@ -1,7 +1,6 @@
-package aigm.llm.openai;
+package aigm.llm;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -12,13 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import aigm.llm.LlmClient;
-import aigm.llm.LlmClientProvider;
-import aigm.llm.LlmException;
-import aigm.llm.LlmMessage;
-import aigm.llm.LlmRequest;
-import aigm.llm.LlmResponse;
-import aigm.llm.LlmSettings;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -121,9 +113,6 @@ public final class OpenAiCompatibleClient implements LlmClient {
         if (request.jsonObject() && settings.jsonMode()) {
             root.putObject("response_format").put("type", "json_object");
         }
-        for (Map.Entry<String, Object> extra : request.extraBody().entrySet()) {
-            root.set(extra.getKey(), MAPPER.valueToTree(extra.getValue()));
-        }
         return root;
     }
 
@@ -179,12 +168,12 @@ public final class OpenAiCompatibleClient implements LlmClient {
             throw LlmException.retryable("LLM returned non-JSON body", 200);
         }
         JsonNode choice = root.path("choices").path(0);
-        String content = choice.path("message").path("content").asText("");
+        String content = textOrEmpty(choice.path("message").path("content"));
         if (content.isBlank()) {
-            content = choice.path("text").asText("");
+            content = textOrEmpty(choice.path("text"));
         }
-        String model = root.path("model").asText("");
-        String finish = choice.path("finish_reason").asText("");
+        String model = textOrEmpty(root.path("model"));
+        String finish = textOrEmpty(choice.path("finish_reason"));
         JsonNode usageNode = root.path("usage");
         LlmResponse.Usage usage = new LlmResponse.Usage(
             usageNode.path("prompt_tokens").asInt(0),
@@ -192,6 +181,10 @@ public final class OpenAiCompatibleClient implements LlmClient {
             usageNode.path("total_tokens").asInt(0)
         );
         return new LlmResponse(content, model, usage, finish);
+    }
+
+    private static String textOrEmpty(JsonNode node) {
+        return node == null || node.isNull() ? "" : node.asText();
     }
 
     private static JsonNode readTreeQuietly(String body) {
@@ -202,18 +195,6 @@ public final class OpenAiCompatibleClient implements LlmClient {
             return MAPPER.readTree(body);
         } catch (IOException e) {
             return null;
-        }
-    }
-
-    public static final class Provider implements LlmClientProvider {
-        @Override
-        public String id() {
-            return "openai";
-        }
-
-        @Override
-        public LlmClient create(LlmSettings settings) {
-            return new OpenAiCompatibleClient(settings);
         }
     }
 }

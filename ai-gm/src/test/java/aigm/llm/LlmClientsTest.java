@@ -11,9 +11,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import aigm.llm.openai.OpenAiCompatibleClient;
-import aigm.llm.stub.StubLlmClient;
-
 class LlmClientsTest {
 
     @Test

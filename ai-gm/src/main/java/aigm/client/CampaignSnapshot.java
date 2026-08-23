@@ -6,7 +6,7 @@ import java.util.Map;
 import aigm.gamestate.Clock;
 import aigm.gamestate.Position;
 import aigm.gamestate.campaign.Crew;
-import aigm.llm.gm.LlmActivities;
+import aigm.llm.LlmActivities;
 import aigm.workflow.CampaignWorkflow;
 import aigm.workflow.DowntimeActivityChoice;
 

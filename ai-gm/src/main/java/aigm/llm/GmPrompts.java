@@ -1,9 +1,8 @@
-package aigm.llm.gm;
+package aigm.llm;
 
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.player.Action;
-import aigm.llm.LlmRequest;
 
 /** BitD-flavored prompts. Mechanics stay in Java; the model only judges fiction. */
 final class GmPrompts {

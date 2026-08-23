@@ -51,7 +51,7 @@ public class CampaignImplemented implements CampaignWorkflow {
             ScoreWorkflow score = Workflow.newChildWorkflowStub(
                 ScoreWorkflow.class,
                 ChildWorkflowOptions.newBuilder()
-                    .setWorkflowId("score-" + Workflow.getInfo().getWorkflowId() + "-" + cycleNumber)
+                    .setWorkflowId(WorkflowSupport.scoreWorkflowId(Workflow.getInfo().getWorkflowId(), cycleNumber))
                     .build()
             );
             score.run(scoreRequest);
@@ -60,7 +60,7 @@ public class CampaignImplemented implements CampaignWorkflow {
             DowntimeWorkflow downtime = Workflow.newChildWorkflowStub(
                 DowntimeWorkflow.class,
                 ChildWorkflowOptions.newBuilder()
-                    .setWorkflowId("downtime-" + Workflow.getInfo().getWorkflowId() + "-" + cycleNumber)
+                    .setWorkflowId(WorkflowSupport.downtimeWorkflowId(Workflow.getInfo().getWorkflowId(), cycleNumber))
                     .build()
             );
             downtime.run(new DowntimeRequest(

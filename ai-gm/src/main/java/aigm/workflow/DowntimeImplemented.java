@@ -11,7 +11,7 @@ import aigm.activities.Activities;
 import aigm.gamestate.DiceRoll;
 import aigm.gamestate.player.Advancement;
 import aigm.gamestate.player.Harm;
-import aigm.llm.gm.LlmActivities;
+import aigm.llm.LlmActivities;
 import io.temporal.workflow.Workflow;
 
 /**
