@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import aigm.gamestate.Ability;
 import aigm.gamestate.Clock;
-import aigm.gamestate.campaign.CrewStanding.Hold;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.score.Score;
 
@@ -170,7 +169,12 @@ public record Crew(
     }
 
     public boolean isAtWar() {
-        return factionStatuses.values().stream().anyMatch(RelationshipStatus::isAtWar);
+        for (RelationshipStatus status : factionStatuses.values()) {
+            if (status.isAtWar()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Crew withMembers(List<Player> v) {

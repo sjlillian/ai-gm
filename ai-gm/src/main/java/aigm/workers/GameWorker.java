@@ -2,10 +2,10 @@ package aigm.workers;
 
 import aigm.TaskQueues;
 import aigm.activities.ActivitiesImpl;
-import aigm.workflow.CampaignWorkflowImpl;
-import aigm.workflow.DowntimeWorkflowImpl;
-import aigm.workflow.PlayerWorkflowImpl;
-import aigm.workflow.ScoreWorkflowImpl;
+import aigm.workflow.CampaignImplemented;
+import aigm.workflow.DowntimeImplemented;
+import aigm.workflow.PlayerImplemented;
+import aigm.workflow.ScoreImplemented;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
@@ -27,10 +27,10 @@ public class GameWorker {
 
         Worker worker = factory.newWorker(TaskQueues.GAME, options);
         worker.registerWorkflowImplementationTypes(
-            CampaignWorkflowImpl.class,
-            ScoreWorkflowImpl.class,
-            DowntimeWorkflowImpl.class,
-            PlayerWorkflowImpl.class
+            CampaignImplemented.class,
+            ScoreImplemented.class,
+            DowntimeImplemented.class,
+            PlayerImplemented.class
         );
         worker.registerActivitiesImplementations(new ActivitiesImpl());
 
