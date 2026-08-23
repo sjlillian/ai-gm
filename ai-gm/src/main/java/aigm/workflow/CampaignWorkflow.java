@@ -110,4 +110,12 @@ public interface CampaignWorkflow {
 
     @QueryMethod
     Phase getPhase();
+
+    /** Current score/downtime cycle index (used to derive child workflow IDs). */
+    @QueryMethod
+    int getCycleNumber();
+
+    /** PC child workflow IDs started for this campaign. */
+    @QueryMethod
+    java.util.List<String> getPcWorkflowIds();
 }

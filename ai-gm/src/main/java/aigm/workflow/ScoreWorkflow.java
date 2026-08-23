@@ -9,6 +9,7 @@ import io.temporal.workflow.WorkflowMethod;
 import java.util.Map;
 
 import aigm.gamestate.Clock;
+import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.player.Action;
 import aigm.llm.gm.LlmActivities;
@@ -82,6 +83,22 @@ public interface ScoreWorkflow {
      */
     @UpdateMethod
     LlmActivities.Adjudication adjudicate(String situation, String approach, Action chosenAction);
+
+    /**
+     * Rolls the action dice in an activity, records the result on this score, and returns it.
+     * Call after {@link #adjudicate} once position/effect are set.
+     */
+    @UpdateMethod
+    ActionRollResult resolveAction(
+        String pcId,
+        Action action,
+        int actionRating,
+        Position position,
+        Effect effect,
+        boolean push,
+        boolean assist,
+        String consequence
+    );
 
     /** Read-only snapshot of clocks currently active during this score, for UI. */
     @QueryMethod

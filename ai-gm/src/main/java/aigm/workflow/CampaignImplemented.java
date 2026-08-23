@@ -194,4 +194,14 @@ public class CampaignImplemented implements CampaignWorkflow {
     public Phase getPhase() {
         return phase;
     }
+
+    @Override
+    public int getCycleNumber() {
+        return cycleNumber;
+    }
+
+    @Override
+    public java.util.List<String> getPcWorkflowIds() {
+        return List.copyOf(pcWorkflowIds);
+    }
 }

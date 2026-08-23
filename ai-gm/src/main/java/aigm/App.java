@@ -1,14 +1,13 @@
 package aigm;
 
-import aigm.starters.GameStarter;
+import aigm.client.cli.GameCli;
 
 /**
- * This is the main TEST entrypoint to run the application. It will call the
- * Starter and make sure that a worker is running.
+ * Default entrypoint: interactive CLI over the UI-agnostic {@link aigm.client.GameClient}.
+ * Worker must already be running ({@link aigm.workers.GameWorker}).
  */
 public class App {
     public static void main(String[] args) {
-        GameStarter starter = new GameStarter();
-        starter.run();
+        GameCli.main(args);
     }
 }

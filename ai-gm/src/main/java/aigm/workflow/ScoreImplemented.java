@@ -8,6 +8,7 @@ import java.util.Map;
 import aigm.activities.Activities;
 import aigm.gamestate.Clock;
 import aigm.gamestate.DiceRoll;
+import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Advancement;
@@ -145,6 +146,41 @@ public class ScoreImplemented implements ScoreWorkflow {
         LlmActivities llm = WorkflowSupport.llmActivities();
         lastAdjudication = llm.adjudicateAction(situation, approach, chosenAction);
         return lastAdjudication;
+    }
+
+    @Override
+    public ActionRollResult resolveAction(
+        String pcId,
+        Action action,
+        int actionRating,
+        Position position,
+        Effect effect,
+        boolean push,
+        boolean assist,
+        String consequence
+    ) {
+        Activities activities = WorkflowSupport.activities();
+        DiceRoll roll = activities.rollAction(actionRating, push, assist);
+        ActionRollResult result = new ActionRollResult(
+            pcId,
+            action,
+            position,
+            effect,
+            roll.dice().size(),
+            roll.highest(),
+            roll.sixes(),
+            push,
+            assist,
+            consequence == null ? "" : consequence
+        );
+        recordActionRoll(result);
+        LlmActivities llm = WorkflowSupport.llmActivities();
+        llm.narrate(
+            (pcId == null ? "A scoundrel" : pcId) + " rolls " + action,
+            "Dice " + roll.dice() + " (highest " + roll.highest() + "). Position "
+                + position + ", effect " + effect + "."
+        );
+        return result;
     }
 
     @Override
