@@ -1,5 +1,7 @@
 package aigm.gamestate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public record Clock(
     String name,
     int progress,
@@ -35,6 +37,7 @@ public record Clock(
         return new Overflow(new Clock(name, remainder, max), completions);
     }
 
+    @JsonIgnore
     public boolean isComplete() {
         return progress >= max;
     }

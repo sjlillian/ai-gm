@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import aigm.gamestate.Ability;
 import aigm.gamestate.Clock;
 import aigm.gamestate.player.Player;
@@ -102,6 +104,7 @@ public record Crew(
         return withCrewStanding(crewStanding.addTurf(amount));
     }
 
+    @JsonIgnore
     public boolean readyToAdvance() {
         return crewXP.isComplete();
     }
@@ -168,6 +171,7 @@ public record Crew(
         return setFactionStatus(factionId, RelationshipStatus.HOSTILE);
     }
 
+    @JsonIgnore
     public boolean isAtWar() {
         for (RelationshipStatus status : factionStatuses.values()) {
             if (status.isAtWar()) {

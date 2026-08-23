@@ -2,6 +2,7 @@ package aigm.workers;
 
 import aigm.TaskQueues;
 import aigm.activities.ActivitiesImpl;
+import aigm.gamestate.json.GameDataConverter;
 import aigm.llm.LlmClient;
 import aigm.llm.LlmClients;
 import aigm.llm.gm.LlmActivitiesImpl;
@@ -10,6 +11,7 @@ import aigm.workflow.DowntimeImplemented;
 import aigm.workflow.PlayerImplemented;
 import aigm.workflow.ScoreImplemented;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowClientOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
@@ -19,7 +21,12 @@ import io.temporal.worker.tuning.PollerBehaviorAutoscaling;
 public class GameWorker {
     public static void main(String[] args) {
         WorkflowServiceStubs service = WorkflowServiceStubs.newLocalServiceStubs();
-        WorkflowClient client = WorkflowClient.newInstance(service);
+        WorkflowClient client = WorkflowClient.newInstance(
+            service,
+            WorkflowClientOptions.newBuilder()
+                .setDataConverter(GameDataConverter.create())
+                .build()
+        );
         WorkerFactory factory = WorkerFactory.newInstance(client);
 
         WorkerOptions options = WorkerOptions.newBuilder()

@@ -3,6 +3,8 @@ package aigm.gamestate.player;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import aigm.gamestate.Clock;
 
 /**
@@ -46,6 +48,7 @@ public record Trauma(
         this(new Clock("Stress", STRESS_BOXES), List.of());
     }
 
+    @JsonIgnore
     public boolean isRetired() {
         return conditions.size() >= TRAUMA_LIMIT;
     }

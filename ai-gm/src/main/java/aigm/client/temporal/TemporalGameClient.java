@@ -14,6 +14,7 @@ import aigm.gamestate.Clock;
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
 import aigm.gamestate.campaign.Crew;
+import aigm.gamestate.json.GameDataConverter;
 import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.player.Trauma;
@@ -28,6 +29,7 @@ import aigm.workflow.ScoreEndRequest;
 import aigm.workflow.ScoreRequest;
 import aigm.workflow.ScoreWorkflow;
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 
@@ -44,7 +46,12 @@ public final class TemporalGameClient implements GameClient {
 
     public TemporalGameClient() {
         this.service = WorkflowServiceStubs.newLocalServiceStubs();
-        this.client = WorkflowClient.newInstance(service);
+        this.client = WorkflowClient.newInstance(
+            service,
+            WorkflowClientOptions.newBuilder()
+                .setDataConverter(GameDataConverter.create())
+                .build()
+        );
         this.ownsService = true;
     }
 
