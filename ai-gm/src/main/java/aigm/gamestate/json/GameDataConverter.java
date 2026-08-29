@@ -26,10 +26,11 @@ public final class GameDataConverter {
 
     public static DataConverter create() {
         return DefaultDataConverter.newDefaultInstance()
-            .withPayloadConverterOverrides(new JacksonJsonPayloadConverter(objectMapper()));
+            .withPayloadConverterOverrides(new JacksonJsonPayloadConverter(mapper()));
     }
 
-    static ObjectMapper objectMapper() {
+    /** Shared mapper for Temporal payloads and the HTTP UI. */
+    public static ObjectMapper mapper() {
         ObjectMapper mapper = JacksonJsonPayloadConverter.newDefaultObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 

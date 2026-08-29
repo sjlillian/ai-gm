@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
-import aigm.gamestate.campaign.RelationshipStatus;
 import aigm.gamestate.player.Action;
 
 class LlmActivitiesImplTest {
@@ -57,6 +56,7 @@ class LlmActivitiesImplTest {
         assertTrue(result.fiction().length() > 10);
         assertTrue(result.clocks().size() >= 2);
         assertEquals("Lampblacks vs Crows", result.clocks().get(0).name());
-        assertEquals(RelationshipStatus.HELPFUL, result.factions().get(0).status());
+        assertTrue(result.scores().size() >= 1);
+        assertEquals("Steal the Crows' tribute book", result.scores().get(0).title());
     }
 }

@@ -15,7 +15,8 @@ public final class StubLlmClient implements LlmClient {
             content = """
                 {"fiction":"Crow's Foot is already at war. The Lampblacks want a word, and the Crows want a body. (Stub GM — set AIGM_LLM_BASE_URL or AIGM_LLM_API_KEY to enable a model.)",\
                 "clocks":[{"name":"Lampblacks vs Crows","segments":6},{"name":"Bluecoat notice","segments":4}],\
-                "factions":[{"faction":"The Lampblacks","status":"HELPFUL"},{"faction":"The Crows","status":"HOSTILE"}]}
+                "factions":[{"faction":"The Lampblacks","status":"HELPFUL"},{"faction":"The Crows","status":"HOSTILE"}],\
+                "scores":[{"title":"Steal the Crows' tribute book","hook":"Bazso Baz says the Crows keep a ledger of who pays. Lift it and Crow's Foot tilts.","targetName":"The Crows' counting house","targetTier":"ONE","planType":"STEALTH","district":"Crow's Foot"},{"title":"Sink a Lampblack boat","hook":"A smuggling skiff at the Docks is loaded with leviathan blood the Lampblacks cannot afford to lose.","targetName":"Lampblack skiff","targetTier":"ZERO","planType":"ASSAULT","district":"The Docks"},{"title":"Walk into Six Towers as mourners","hook":"A dead noble's wake is unguarded after midnight. The will in the study names enemies you could sell.","targetName":"Kellis wake","targetTier":"TWO","planType":"SOCIAL","district":"Six Towers"}]}
                 """;
         } else if (request.jsonObject()) {
             content = """

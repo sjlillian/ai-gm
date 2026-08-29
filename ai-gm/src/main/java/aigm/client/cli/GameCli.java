@@ -244,7 +244,12 @@ public final class GameCli {
         }
         out.println("step=" + prompt.step() + (prompt.complete() ? " DONE" : ""));
         out.println(prompt.message());
-        if (!prompt.options().isEmpty()) {
+        if (prompt.choices() != null && !prompt.choices().isEmpty()) {
+            for (aigm.workflow.PromptOption choice : prompt.choices()) {
+                out.println("- " + choice.id() + ": " + choice.label()
+                    + (choice.description().isBlank() ? "" : " — " + choice.description()));
+            }
+        } else if (!prompt.options().isEmpty()) {
             out.println("options: " + String.join(", ", prompt.options()));
         }
     }

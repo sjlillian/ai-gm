@@ -96,7 +96,25 @@ public class LlmActivitiesImpl implements LlmActivities {
                 }
             });
         }
-        return new StartingSituation(fiction, clocks, factions);
+        List<ScoreSeed> scores = new ArrayList<>();
+        JsonNode scoresNode = node.get("scores");
+        if (scoresNode != null && scoresNode.isArray()) {
+            scoresNode.forEach(item -> {
+                String title = item.path("title").asText("");
+                if (title.isBlank()) {
+                    return;
+                }
+                scores.add(new ScoreSeed(
+                    title,
+                    item.path("hook").asText(""),
+                    item.path("targetName").asText(""),
+                    item.path("targetTier").asText("ZERO"),
+                    item.path("planType").asText("STEALTH"),
+                    item.path("district").asText("")
+                ));
+            });
+        }
+        return new StartingSituation(fiction, clocks, factions, scores);
     }
 
     private LlmResponse invoke(LlmRequest request) {

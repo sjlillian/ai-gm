@@ -25,6 +25,7 @@ public class DowntimeImplemented implements DowntimeWorkflow {
     private final Queue<DowntimeActivityChoice> pending = new LinkedList<>();
     private boolean closed;
     private DowntimeRequest request;
+    private String entanglementNote = "";
 
     @Override
     public DowntimeResult run(DowntimeRequest request) {
@@ -41,9 +42,10 @@ public class DowntimeImplemented implements DowntimeWorkflow {
             request.wantedLevel(),
             request.currentHeat()
         );
+        entanglementNote = entanglement.name() + ": " + entanglement.description();
         narrate.narrate(
             "Entanglement",
-            entanglement.name() + ": " + entanglement.description()
+            entanglementNote
         );
 
         while (!closed) {
@@ -171,22 +173,94 @@ public class DowntimeImplemented implements DowntimeWorkflow {
 
     @Override
     public void chooseActivity(String pcId, DowntimeActivityChoice choice) {
-        if (closed || request == null) {
-            return;
+        try {
+            enqueue(pcId, choice);
+        } catch (IllegalArgumentException | IllegalStateException ignored) {
+            // Signals cannot usefully reject; use submitActivity from the UI.
         }
-        if (!request.pcIds().contains(pcId) && !request.pcIds().contains(choice.pcId())) {
-            return;
+    }
+
+    @Override
+    public void submitActivity(String pcId, DowntimeActivityChoice choice) {
+        enqueue(pcId, choice);
+    }
+
+    @Override
+    public String getEntanglement() {
+        return entanglementNote == null ? "" : entanglementNote;
+    }
+
+    private void enqueue(String pcId, DowntimeActivityChoice choice) {
+        if (closed) {
+            throw new IllegalStateException("Downtime is already closed");
         }
-        String id = choice.pcId() != null ? choice.pcId() : pcId;
+        if (request == null) {
+            throw new IllegalStateException("Downtime has not started yet");
+        }
+        String id = resolveSubmittedId(pcId, choice);
+        if (id == null) {
+            throw new IllegalArgumentException(
+                "Unknown scoundrel '" + (choice != null ? choice.pcId() : pcId) + "'"
+            );
+        }
         int used = freeSlotsUsed.getOrDefault(id, 0);
-        if (used >= request.freeActivitiesPerPc() && !choice.extraPaidWithCoin()) {
-            return;
+        boolean paid = choice != null && choice.extraPaidWithCoin();
+        if (used >= request.freeActivitiesPerPc() && !paid) {
+            throw new IllegalStateException(
+                id + " has used their free downtime activities. Pay coin for another, or close downtime."
+            );
         }
         if (used < request.freeActivitiesPerPc()) {
             freeSlotsUsed.put(id, used + 1);
         }
-        submitted.computeIfAbsent(id, k -> new ArrayList<>()).add(choice);
-        pending.add(choice);
+        DowntimeActivityChoice stored = new DowntimeActivityChoice(
+            choice.kind(),
+            id,
+            choice.details(),
+            paid
+        );
+        submitted.computeIfAbsent(id, k -> new ArrayList<>()).add(stored);
+        pending.add(stored);
+    }
+
+    private String resolveSubmittedId(String pcId, DowntimeActivityChoice choice) {
+        String raw = choice != null && choice.pcId() != null && !choice.pcId().isBlank()
+            ? choice.pcId()
+            : pcId;
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        if (request.pcIds().contains(raw) || request.pcWorkflowIds().contains(raw)) {
+            return toJoinId(raw);
+        }
+        for (String known : request.pcIds()) {
+            if (raw.equalsIgnoreCase(known) || raw.endsWith("-" + known) || known.endsWith("-" + raw)) {
+                return known;
+            }
+        }
+        for (String workflowId : request.pcWorkflowIds()) {
+            if (workflowId != null && (workflowId.equals(raw) || workflowId.endsWith("-" + raw))) {
+                return toJoinId(workflowId);
+            }
+        }
+        return null;
+    }
+
+    private String toJoinId(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (request.pcIds().contains(raw)) {
+            return raw;
+        }
+        String campaign = request.campaignWorkflowId();
+        if (campaign != null && !campaign.isBlank()) {
+            String prefix = "pc-" + campaign + "-";
+            if (raw.startsWith(prefix)) {
+                return raw.substring(prefix.length());
+            }
+        }
+        return raw;
     }
 
     @Override

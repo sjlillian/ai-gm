@@ -14,6 +14,7 @@ import aigm.gamestate.campaign.CrewStanding;
 import aigm.gamestate.campaign.CrewTypeEnum;
 import aigm.gamestate.campaign.Upgrade;
 import aigm.gamestate.player.Player;
+import aigm.gamestate.score.ScoreType;
 import aigm.llm.LlmActivities;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.enums.v1.ParentClosePolicy;
@@ -44,6 +45,9 @@ public class CampaignImplemented implements CampaignWorkflow {
     private final List<String> joinedPcIds = new ArrayList<>();
     private final Set<String> readyPcIds = new HashSet<>();
     private int extraUpgradesPicked;
+    private String worldBrief = "";
+    private List<ScoreOpportunity> opportunities = new ArrayList<>();
+    private String lastInvestigation = "";
 
     @Override
     public void run(CampaignState state) {
@@ -52,6 +56,9 @@ public class CampaignImplemented implements CampaignWorkflow {
         this.cycleNumber = state.cycleNumber();
         this.pcsStarted = state.pcsStarted();
         this.sessionZeroComplete = state.sessionZeroComplete();
+        this.worldBrief = state.worldBrief();
+        this.opportunities = new ArrayList<>(state.opportunities());
+        this.lastInvestigation = state.lastInvestigation();
 
         if (!sessionZeroComplete) {
             phase = Phase.SESSION_ZERO;
@@ -66,6 +73,9 @@ public class CampaignImplemented implements CampaignWorkflow {
         }
 
         ensurePlayerWorkflows();
+        if (worldBrief == null || worldBrief.isBlank()) {
+            startingSituation();
+        }
 
         while (!ended) {
             phase = Phase.FREEPLAY;
@@ -95,7 +105,7 @@ public class CampaignImplemented implements CampaignWorkflow {
             );
             downtime.run(new DowntimeRequest(
                 "downtime-" + cycleNumber,
-                pcNames(),
+                pcJoinIds(),
                 List.copyOf(pcWorkflowIds),
                 Workflow.getInfo().getWorkflowId(),
                 2,
@@ -158,6 +168,36 @@ public class CampaignImplemented implements CampaignWorkflow {
                 crew = crew.setFactionStatus(note.faction(), note.status());
             }
         }
+        worldBrief = situation.fiction() == null ? "" : situation.fiction();
+        opportunities = new ArrayList<>();
+        if (situation.scores() != null) {
+            int n = 1;
+            for (LlmActivities.ScoreSeed seed : situation.scores()) {
+                if (seed == null || seed.title() == null || seed.title().isBlank()) {
+                    continue;
+                }
+                opportunities.add(new ScoreOpportunity(
+                    "opp-" + n++,
+                    seed.title(),
+                    seed.hook(),
+                    seed.targetName(),
+                    parseOpportunityTier(seed.targetTier()),
+                    parseOpportunityPlan(seed.planType()),
+                    seed.district()
+                ));
+            }
+        }
+        if (opportunities.isEmpty()) {
+            opportunities.add(new ScoreOpportunity(
+                "opp-1",
+                "A job in " + (crew.huntingGrounds().isBlank() ? "Crow's Foot" : crew.huntingGrounds()),
+                "Someone wants work done on your turf. Ask around.",
+                "Unknown patron",
+                CrewStanding.Tier.ZERO,
+                ScoreType.STEALTH,
+                crew.huntingGrounds()
+            ));
+        }
         WorkflowSupport.llmActivities().narrate("Session 0 starting situation", situation.fiction());
     }
 
@@ -194,8 +234,50 @@ public class CampaignImplemented implements CampaignWorkflow {
             List.copyOf(pcWorkflowIds),
             cycleNumber,
             pcsStarted,
-            sessionZeroComplete
+            sessionZeroComplete,
+            worldBrief,
+            List.copyOf(opportunities),
+            lastInvestigation
         );
+    }
+
+    private List<String> pcJoinIds() {
+        List<String> ids = new ArrayList<>();
+        String campaignId = Workflow.getInfo().getWorkflowId();
+        String prefix = "pc-" + campaignId + "-";
+        for (String workflowId : pcWorkflowIds) {
+            if (workflowId != null && workflowId.startsWith(prefix)) {
+                ids.add(workflowId.substring(prefix.length()));
+            } else if (workflowId != null && !workflowId.isBlank()) {
+                ids.add(workflowId);
+            }
+        }
+        if (ids.isEmpty()) {
+            ids.addAll(pcNames());
+        }
+        return ids;
+    }
+
+    private static CrewStanding.Tier parseOpportunityTier(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return CrewStanding.Tier.ZERO;
+        }
+        try {
+            return CrewStanding.Tier.valueOf(raw.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return CrewStanding.Tier.ZERO;
+        }
+    }
+
+    private static ScoreType parseOpportunityPlan(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return ScoreType.STEALTH;
+        }
+        try {
+            return ScoreType.valueOf(raw.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ScoreType.STEALTH;
+        }
     }
 
     private void ensurePlayerWorkflows() {
@@ -422,47 +504,68 @@ public class CampaignImplemented implements CampaignWorkflow {
             return CreationPrompt.done("Session 0 is complete.");
         }
         return switch (crewStep) {
-            case WAITING_FOR_JOIN -> CreationPrompt.of(
+            case WAITING_FOR_JOIN -> CreationPrompt.choose(
                 crewStep,
-                "Join scoundrels with join <pcId>, then ready when everyone is in. Joined: "
-                    + joinedPcIds,
-                List.of());
+                "Each player joins with their name (the username they'll play as). "
+                    + "When everyone is in, close joining. Joined: " + joinedPcIds,
+                List.of(),
+                List.of(PromptField.text(
+                    "name",
+                    "Your name",
+                    "Not a character sheet name yet — just how you'll sit at this table.",
+                    true)),
+                CreationPrompt.NONE);
             case WAITING_FOR_PCS -> CreationPrompt.of(
                 crewStep,
                 "Waiting for character creation. Ready: " + readyPcIds + " of " + joinedPcIds,
                 List.of());
-            case TYPE -> CreationPrompt.of(
+            case TYPE -> CreationPrompt.choose(
                 crewStep,
-                "Choose a crew type.",
-                CreationCatalog.crewTypeNames());
-            case REPUTATION -> CreationPrompt.of(
+                "What kind of criminal enterprise is this crew?",
+                CreationCatalog.crewTypeOptions());
+            case REPUTATION -> CreationPrompt.choose(
                 crewStep,
-                "Choose the crew's reputation.",
-                CreationCatalog.reputationNames());
-            case LAIR -> CreationPrompt.of(
+                "How does the underworld already talk about you?",
+                CreationCatalog.reputationOptions());
+            case LAIR -> CreationPrompt.choose(
                 crewStep,
-                "Describe the lair (district and a sentence).",
-                List.of());
-            case HUNTING_GROUNDS -> CreationPrompt.of(
+                "Where is the lair? Pick a district on the map, then say where in that district you actually sleep.",
+                CreationCatalog.districtOptions(),
+                List.of(PromptField.text(
+                    "detail",
+                    "The room itself",
+                    "A loft above a butcher, a barge hold, a ruined bell tower…",
+                    true)),
+                CreationPrompt.MAP);
+            case HUNTING_GROUNDS -> CreationPrompt.choose(
                 crewStep,
-                "Name the hunting grounds / operating area.",
-                List.of());
-            case ABILITY -> CreationPrompt.of(
+                "Where do you usually work? Hunting grounds are the streets you claim — pick a district, then a beat.",
+                CreationCatalog.districtOptions(),
+                List.of(PromptField.text(
+                    "detail",
+                    "Your beat",
+                    "Which streets, docks, or clientele you squeeze.",
+                    true)),
+                CreationPrompt.MAP);
+            case ABILITY -> CreationPrompt.choose(
                 crewStep,
                 "Choose one crew special ability.",
-                crew.type() == null ? List.of() : CreationCatalog.abilityNames(crew.type().getAbilities()));
-            case CONTACT -> CreationPrompt.of(
+                crew.type() == null ? List.of() : CreationCatalog.abilityOptions(crew.type().getAbilities()));
+            case CONTACT -> CreationPrompt.choose(
                 crewStep,
                 "Choose a crew contact.",
-                crew.type() == null ? List.of() : CreationCatalog.contactNames(crew.type().getContacts()));
-            case UPGRADES -> CreationPrompt.of(
+                crew.type() == null ? List.of() : CreationCatalog.contactOptions(crew.type().getContacts()));
+            case UPGRADES -> CreationPrompt.choose(
                 crewStep,
-                "Choose extra upgrades (" + extraUpgradesPicked + " of " + EXTRA_UPGRADES + "). Starting upgrades are already on the sheet.",
-                CreationCatalog.upgradeNames(unownedUpgrades()));
-            case NAME -> CreationPrompt.of(
+                "Choose extra upgrades (" + extraUpgradesPicked + " of " + EXTRA_UPGRADES
+                    + "). Starting upgrades are already on the sheet.",
+                CreationCatalog.upgradeOptions(unownedUpgrades()));
+            case NAME -> CreationPrompt.choose(
                 crewStep,
                 "Name the crew.",
-                List.of());
+                List.of(),
+                List.of(PromptField.text("name", "Crew name", "What the city will learn to fear.", true)),
+                CreationPrompt.NONE);
             case DONE -> CreationPrompt.done("Crew sheet is complete.");
         };
     }
@@ -494,6 +597,34 @@ public class CampaignImplemented implements CampaignWorkflow {
             List.copyOf(readyPcIds),
             extraUpgradesPicked
         );
+    }
+
+    @Override
+    public String getWorldBrief() {
+        return worldBrief == null ? "" : worldBrief;
+    }
+
+    @Override
+    public List<ScoreOpportunity> getOpportunities() {
+        return List.copyOf(opportunities);
+    }
+
+    @Override
+    public String getLastInvestigation() {
+        return lastInvestigation == null ? "" : lastInvestigation;
+    }
+
+    @Override
+    public String investigate(String question) {
+        if (phase != Phase.FREEPLAY && phase != Phase.SESSION_ZERO) {
+            throw new IllegalStateException("Investigate during free play (phase=" + phase + ")");
+        }
+        String focus = question == null || question.isBlank() ? "What trouble is moving on our turf?" : question.trim();
+        lastInvestigation = WorkflowSupport.llmActivities().narrate(
+            worldBrief + "\n" + crewSummary(),
+            "The crew investigates: " + focus
+        );
+        return lastInvestigation;
     }
 
     @Override

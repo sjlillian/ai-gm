@@ -215,42 +215,74 @@ public class PlayerImplemented implements PlayerWorkflow {
             return CreationPrompt.done(player.name() + " is ready.");
         }
         return switch (creationStep) {
-            case PLAYBOOK -> CreationPrompt.of(
+            case PLAYBOOK -> CreationPrompt.choose(
                 creationStep,
-                "Choose a playbook.",
-                CreationCatalog.playbookNames());
-            case HERITAGE -> CreationPrompt.of(
+                "Choose a playbook. This is your scoundrel's starting package, not a class wall.",
+                CreationCatalog.playbookOptions());
+            case HERITAGE -> CreationPrompt.choose(
                 creationStep,
-                "Choose a heritage and a detail"
-                    + (player.heritage() == Heritage.TYCHEROS
-                        ? ""
-                        : " (Tycheros needs a demonic telltale)."),
-                CreationCatalog.heritageNames());
-            case BACKGROUND -> CreationPrompt.of(
+                "Where is your family from? Pick a heritage, then add a personal detail (Tycheros also needs a demonic telltale).",
+                CreationCatalog.heritageOptions(),
+                List.of(PromptField.text(
+                    "detail",
+                    "Your detail",
+                    "A specific origin note — a neighborhood, a family trade, or a Tycherosi telltale.",
+                    true)),
+                CreationPrompt.SINGLE);
+            case BACKGROUND -> CreationPrompt.choose(
                 creationStep,
-                "Choose a background and a detail.",
-                CreationCatalog.backgroundNames());
-            case ACTIONS -> CreationPrompt.of(
+                "What did you do before the scoundrel life?",
+                CreationCatalog.backgroundOptions(),
+                List.of(PromptField.text(
+                    "detail",
+                    "Your detail",
+                    "A specific job, institution, or street that shaped you.",
+                    true)),
+                CreationPrompt.SINGLE);
+            case ACTIONS -> CreationPrompt.choose(
                 creationStep,
-                "Assign extra action dots one at a time (max rating 2). "
+                "Assign extra action dots one at a time (max rating 2 during creation). "
                     + player.extraActionDots() + " of " + Player.CREATION_EXTRA_DOTS + " spent.",
-                CreationCatalog.actionNames());
-            case ABILITY -> CreationPrompt.of(
+                CreationCatalog.actionOptions());
+            case ABILITY -> CreationPrompt.choose(
                 creationStep,
-                "Choose one special ability.",
-                CreationCatalog.playbookAbilityNames(player.playbook()));
-            case CONTACTS -> CreationPrompt.of(
+                "Choose one special ability from your playbook.",
+                CreationCatalog.playbookAbilityOptions(player.playbook()));
+            case CONTACTS -> CreationPrompt.choose(
                 creationStep,
-                "Choose a friend and a rival from the playbook list.",
-                CreationCatalog.playbookContactNames(player.playbook()));
-            case VICE -> CreationPrompt.of(
+                "Choose a close friend, then a rival, from your playbook contacts.",
+                CreationCatalog.playbookContactOptions(player.playbook()),
+                List.of(
+                    PromptField.text("friend", "Friend", "First pick fills this.", true),
+                    PromptField.text("rival", "Rival", "Second pick fills this.", true)),
+                CreationPrompt.PAIR);
+            case VICE -> CreationPrompt.choose(
                 creationStep,
-                "Choose a vice and a purveyor (person or place).",
-                CreationCatalog.viceNames());
-            case IDENTITY -> CreationPrompt.of(
+                "Choose how you blow off steam, then pick a purveyor — a person or place you actually go to.",
+                CreationCatalog.viceOptions(),
+                List.of(
+                    new PromptField(
+                        "purveyor",
+                        "Purveyor",
+                        "picks",
+                        "A likely person or place. You can also type your own.",
+                        CreationCatalog.vicePurveyors(null),
+                        true),
+                    PromptField.text(
+                        "purveyorCustom",
+                        "Or write your own",
+                        "Optional if you picked a purveyor above.",
+                        false)),
+                CreationPrompt.SINGLE);
+            case IDENTITY -> CreationPrompt.choose(
                 creationStep,
-                "Set name, alias, and look.",
-                List.of());
+                "Who are you at the table? Name is how the crew knows you. Alias is the street name. Look is what people notice first.",
+                List.of(),
+                List.of(
+                    PromptField.text("name", "Name", "Your given name or the name on the sheet.", true),
+                    PromptField.text("alias", "Alias", "A street name, nickname, or cover. Not the first word of your look.", true),
+                    PromptField.area("look", "Look", "Clothing, bearing, a memorable detail. Full sentences are fine.", true)),
+                CreationPrompt.NONE);
             case DONE -> CreationPrompt.done("Character creation complete.");
         };
     }

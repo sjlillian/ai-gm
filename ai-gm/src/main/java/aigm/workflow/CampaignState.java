@@ -10,24 +10,33 @@ public record CampaignState(
     List<String> pcWorkflowIds,
     int cycleNumber,
     boolean pcsStarted,
-    boolean sessionZeroComplete
+    boolean sessionZeroComplete,
+    String worldBrief,
+    List<ScoreOpportunity> opportunities,
+    String lastInvestigation
 ) {
     public CampaignState {
         crew = crew == null ? Crew.blank() : crew;
         pcWorkflowIds = pcWorkflowIds == null ? List.of() : List.copyOf(pcWorkflowIds);
+        worldBrief = worldBrief == null ? "" : worldBrief;
+        opportunities = opportunities == null ? List.of() : List.copyOf(opportunities);
+        lastInvestigation = lastInvestigation == null ? "" : lastInvestigation;
     }
 
     /** Demo / already-built crew: skip Session 0, start PC children on first run. */
     public static CampaignState initial(Crew crew) {
-        return new CampaignState(crew, List.of(), 0, false, true);
+        return new CampaignState(crew, List.of(), 0, false, true, "", List.of(), "");
     }
 
     /** New campaign: sit in SESSION_ZERO until PCs and crew are created. */
     public static CampaignState blank() {
-        return new CampaignState(Crew.blank(), List.of(), 0, false, false);
+        return new CampaignState(Crew.blank(), List.of(), 0, false, false, "", List.of(), "");
     }
 
     public CampaignState withCrew(Crew crew) {
-        return new CampaignState(crew, pcWorkflowIds, cycleNumber, pcsStarted, sessionZeroComplete);
+        return new CampaignState(
+            crew, pcWorkflowIds, cycleNumber, pcsStarted, sessionZeroComplete,
+            worldBrief, opportunities, lastInvestigation
+        );
     }
 }

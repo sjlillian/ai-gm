@@ -2,6 +2,7 @@ package aigm.workflow;
 
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
+import io.temporal.workflow.UpdateMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 
@@ -60,6 +61,16 @@ public interface DowntimeWorkflow {
      */
     @SignalMethod
     void chooseActivity(String pcId, DowntimeActivityChoice choice);
+
+    /**
+     * Same as {@link #chooseActivity} but rejects unknown PCs and over-limit unpaid
+     * extras so the UI can show the error.
+     */
+    @UpdateMethod
+    void submitActivity(String pcId, DowntimeActivityChoice choice);
+
+    @QueryMethod
+    String getEntanglement();
 
     /**
      * Signaled by the GM/app once every PC has finished choosing, to unblock the

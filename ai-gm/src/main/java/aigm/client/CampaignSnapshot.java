@@ -10,6 +10,7 @@ import aigm.llm.LlmActivities;
 import aigm.workflow.CampaignWorkflow;
 import aigm.workflow.CreationPrompt;
 import aigm.workflow.DowntimeActivityChoice;
+import aigm.workflow.ScoreOpportunity;
 import aigm.workflow.SessionZeroStatus;
 
 /**
@@ -29,5 +30,9 @@ public record CampaignSnapshot(
     LlmActivities.Adjudication lastAdjudication,
     Map<String, List<DowntimeActivityChoice>> downtimeChoices,
     SessionZeroStatus sessionZero,
-    CreationPrompt creationPrompt
+    CreationPrompt creationPrompt,
+    String worldBrief,
+    List<ScoreOpportunity> opportunities,
+    String lastInvestigation,
+    String downtimeEntanglement
 ) {}

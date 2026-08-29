@@ -266,4 +266,17 @@ public enum PlaybookEnum implements Playbook {
         return xpTriggers;
     }
 
+    @Override
+    public String getDescription() {
+        return switch (this) {
+            case CUTTER -> "A dangerous and intimidating fighter.";
+            case HOUND -> "A deadly sharpshooter and tracker.";
+            case LEECH -> "A saboteur, tinker, and wrecker of things.";
+            case LURK -> "A stealthy infiltrator and burglar.";
+            case SLIDE -> "A subtle manipulator and spy.";
+            case SPIDER -> "A devious mastermind who pulls strings from the shadows.";
+            case WHISPER -> "An arcane adept who consorts with spirits and the ghost field.";
+        };
+    }
+
 }

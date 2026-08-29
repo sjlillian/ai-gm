@@ -170,4 +170,20 @@ public interface CampaignWorkflow {
 
     @QueryMethod
     SessionZeroStatus getSessionZeroStatus();
+
+    @QueryMethod
+    String getWorldBrief();
+
+    @QueryMethod
+    java.util.List<ScoreOpportunity> getOpportunities();
+
+    @QueryMethod
+    String getLastInvestigation();
+
+    /**
+     * Free play: ask around, watch a place, lean on a contact. Returns GM fiction
+     * the table can act on. Does not start a score.
+     */
+    @UpdateMethod
+    String investigate(String question);
 }

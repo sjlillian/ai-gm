@@ -15,4 +15,8 @@ public interface Playbook {
     List<Contact> getAvailableContacts();
     List<String> getXpTriggers();
 
+    default String getDescription() {
+        return "";
+    }
+
 }

@@ -42,15 +42,35 @@ public interface LlmActivities {
 
     record FactionNote(String faction, RelationshipStatus status) {}
 
+    record ScoreSeed(
+        String title,
+        String hook,
+        String targetName,
+        String targetTier,
+        String planType,
+        String district
+    ) {
+        public ScoreSeed {
+            title = title == null ? "" : title;
+            hook = hook == null ? "" : hook;
+            targetName = targetName == null ? "" : targetName;
+            targetTier = targetTier == null ? "" : targetTier;
+            planType = planType == null ? "" : planType;
+            district = district == null ? "" : district;
+        }
+    }
+
     record StartingSituation(
         String fiction,
         List<ClockSpec> clocks,
-        List<FactionNote> factions
+        List<FactionNote> factions,
+        List<ScoreSeed> scores
     ) {
         public StartingSituation {
             fiction = fiction == null ? "" : fiction;
             clocks = clocks == null ? List.of() : List.copyOf(clocks);
             factions = factions == null ? List.of() : List.copyOf(factions);
+            scores = scores == null ? List.of() : List.copyOf(scores);
         }
     }
 }

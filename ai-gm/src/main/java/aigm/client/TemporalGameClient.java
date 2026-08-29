@@ -25,6 +25,7 @@ import aigm.workflow.DowntimeActivityChoice;
 import aigm.workflow.DowntimeWorkflow;
 import aigm.workflow.PlayerWorkflow;
 import aigm.workflow.ScoreEndRequest;
+import aigm.workflow.ScoreOpportunity;
 import aigm.workflow.ScoreRequest;
 import aigm.workflow.ScoreWorkflow;
 import aigm.workflow.SessionZeroStatus;
@@ -110,6 +111,10 @@ public final class TemporalGameClient implements AutoCloseable {
         return campaignWorkflowId;
     }
 
+    public boolean isAttached() {
+        return campaignWorkflowId != null && !campaignWorkflowId.isBlank();
+    }
+
     public CampaignSnapshot snapshot() {
         requireAttached();
         CampaignWorkflow campaign = campaign();
@@ -127,6 +132,18 @@ public final class TemporalGameClient implements AutoCloseable {
         Map<String, List<DowntimeActivityChoice>> downtimeChoices = Map.of();
         SessionZeroStatus sessionZero = null;
         CreationPrompt creationPrompt = null;
+        String worldBrief = "";
+        List<ScoreOpportunity> opportunities = List.of();
+        String lastInvestigation = "";
+        String downtimeEntanglement = "";
+
+        try {
+            worldBrief = campaign.getWorldBrief();
+            opportunities = campaign.getOpportunities();
+            lastInvestigation = campaign.getLastInvestigation();
+        } catch (RuntimeException ignored) {
+            // Older in-flight campaigns may not have these queries yet.
+        }
 
         if (phase == CampaignWorkflow.Phase.SCORE) {
             scoreId = WorkflowSupport.scoreWorkflowId(campaignWorkflowId, cycle);
@@ -141,7 +158,9 @@ public final class TemporalGameClient implements AutoCloseable {
         } else if (phase == CampaignWorkflow.Phase.DOWNTIME) {
             downtimeId = WorkflowSupport.downtimeWorkflowId(campaignWorkflowId, cycle);
             try {
-                downtimeChoices = downtimeStub(downtimeId).getSubmittedActivities();
+                DowntimeWorkflow downtime = downtimeStub(downtimeId);
+                downtimeChoices = downtime.getSubmittedActivities();
+                downtimeEntanglement = downtime.getEntanglement();
             } catch (RuntimeException ignored) {
                 // same
             }
@@ -168,7 +187,11 @@ public final class TemporalGameClient implements AutoCloseable {
             lastAdj,
             downtimeChoices,
             sessionZero,
-            creationPrompt
+            creationPrompt,
+            worldBrief,
+            opportunities,
+            lastInvestigation,
+            downtimeEntanglement
         );
     }
 
@@ -214,11 +237,11 @@ public final class TemporalGameClient implements AutoCloseable {
 
     public void endScore(ScoreEndRequest request) {
         activeScore().endScore(request);
-        sleepQuietly(500);
+        sleepQuietly(1200);
     }
 
     public void chooseDowntimeActivity(String pcId, DowntimeActivityChoice choice) {
-        activeDowntime().chooseActivity(pcId, choice);
+        activeDowntime().submitActivity(pcId, choice);
     }
 
     public void closeDowntime() {
@@ -243,47 +266,68 @@ public final class TemporalGameClient implements AutoCloseable {
     }
 
     public CreationPrompt applyCrewCreation(String token, String rest) {
+        return applyCrewCreation(token, rest, Map.of());
+    }
+
+    public CreationPrompt applyCrewCreation(String token, String rest, Map<String, String> fields) {
         requireAttached();
+        Map<String, String> extra = fields == null ? Map.of() : fields;
         CampaignWorkflow campaign = campaign();
         CreationPrompt current = campaign.getCreationPrompt();
         String step = current.step();
+        String choice = first(extra, "token", token);
+        String detail = first(extra, "detail", rest);
         return switch (step) {
-            case "TYPE" -> campaign.chooseCrewType(token);
-            case "REPUTATION" -> campaign.chooseReputation(token);
-            case "LAIR" -> campaign.setLair(joinToken(token, rest));
-            case "HUNTING_GROUNDS" -> campaign.setHuntingGrounds(joinToken(token, rest));
-            case "ABILITY" -> campaign.chooseCrewAbility(token);
-            case "CONTACT" -> campaign.chooseCrewContact(token);
-            case "UPGRADES" -> campaign.chooseUpgrade(token);
-            case "NAME" -> campaign.setCrewName(joinToken(token, rest));
+            case "WAITING_FOR_JOIN" -> campaign.joinPlayer(first(extra, "name", joinToken(choice, detail)));
+            case "TYPE" -> campaign.chooseCrewType(choice);
+            case "REPUTATION" -> campaign.chooseReputation(choice);
+            case "LAIR" -> campaign.setLair(place(choice, detail));
+            case "HUNTING_GROUNDS" -> campaign.setHuntingGrounds(place(choice, detail));
+            case "ABILITY" -> campaign.chooseCrewAbility(choice);
+            case "CONTACT" -> campaign.chooseCrewContact(choice);
+            case "UPGRADES" -> campaign.chooseUpgrade(choice);
+            case "NAME" -> campaign.setCrewName(first(extra, "name", joinToken(choice, detail)));
             default -> throw new IllegalStateException("Crew creation step is " + step + ": " + current.message());
         };
     }
 
     public CreationPrompt applyPcCreation(String pcId, String token, String rest) {
+        return applyPcCreation(pcId, token, rest, Map.of());
+    }
+
+    public CreationPrompt applyPcCreation(String pcId, String token, String rest, Map<String, String> fields) {
+        Map<String, String> extra = fields == null ? Map.of() : fields;
         PlayerWorkflow pc = playerStub(pcId);
         return switch (pc.getCreationStep()) {
-            case PLAYBOOK -> pc.choosePlaybook(token);
+            case PLAYBOOK -> pc.choosePlaybook(first(extra, "token", token));
             case HERITAGE -> pc.chooseHeritage(
-                Heritage.valueOf(token.toUpperCase().replace('-', '_')),
-                rest);
+                Heritage.valueOf(first(extra, "token", token).toUpperCase().replace('-', '_')),
+                first(extra, "detail", rest));
             case BACKGROUND -> pc.chooseBackground(
-                Background.valueOf(token.toUpperCase().replace('-', '_')),
-                rest);
-            case ACTIONS -> pc.assignActionDot(Action.valueOf(token.toUpperCase()));
-            case ABILITY -> pc.chooseAbility(token);
-            case CONTACTS -> {
-                String rival = rest.split("\\s+")[0];
-                yield pc.chooseContacts(token, rival);
-            }
+                Background.valueOf(first(extra, "token", token).toUpperCase().replace('-', '_')),
+                first(extra, "detail", rest));
+            case ACTIONS -> pc.assignActionDot(Action.valueOf(first(extra, "token", token).toUpperCase()));
+            case ABILITY -> pc.chooseAbility(first(extra, "token", token));
+            case CONTACTS -> pc.chooseContacts(
+                first(extra, "friend", token),
+                first(extra, "rival", firstWord(rest)));
             case VICE -> pc.chooseVice(
-                ViceKind.valueOf(token.toUpperCase()),
-                rest);
+                ViceKind.valueOf(first(extra, "token", token).toUpperCase()),
+                firstNonBlank(extra.get("purveyorCustom"), extra.get("purveyor"), rest));
             case IDENTITY -> {
-                String[] parts = rest.isBlank() ? new String[0] : rest.split("\\s+", 2);
-                String alias = parts.length > 0 ? parts[0] : "";
-                String look = parts.length > 1 ? parts[1] : "";
-                yield pc.setIdentity(token, alias, look);
+                String name = first(extra, "name", token);
+                String alias = extra.get("alias");
+                String look = extra.get("look");
+                if (alias == null || alias.isBlank() || look == null || look.isBlank()) {
+                    String[] parts = rest.isBlank() ? new String[0] : rest.split("\\s+", 2);
+                    if (alias == null || alias.isBlank()) {
+                        alias = parts.length > 0 ? parts[0] : "";
+                    }
+                    if (look == null || look.isBlank()) {
+                        look = parts.length > 1 ? parts[1] : rest;
+                    }
+                }
+                yield pc.setIdentity(name, alias, look);
             }
             case DONE -> pc.getCreationPrompt();
         };
@@ -291,6 +335,31 @@ public final class TemporalGameClient implements AutoCloseable {
 
     public CreationPrompt getPcCreationPrompt(String pcId) {
         return playerStub(pcId).getCreationPrompt();
+    }
+
+    /**
+     * Push a wizard answer for the selected client. {@code campaign} (or blank)
+     * applies crew creation; anything else is a PC join id.
+     */
+    public CreationPrompt applyResponse(String clientId, String token, String rest) {
+        return applyResponse(clientId, token, rest, Map.of());
+    }
+
+    public CreationPrompt applyResponse(
+        String clientId,
+        String token,
+        String rest,
+        Map<String, String> fields
+    ) {
+        if (clientId == null || clientId.isBlank() || "campaign".equalsIgnoreCase(clientId)) {
+            return applyCrewCreation(token, rest, fields);
+        }
+        return applyPcCreation(clientId, token, rest, fields);
+    }
+
+    public String investigate(String question) {
+        requireAttached();
+        return campaign().investigate(question);
     }
 
     public void markTrauma(String pcNameOrWorkflowId, Trauma.Condition condition) {
@@ -358,10 +427,59 @@ public final class TemporalGameClient implements AutoCloseable {
     }
 
     private static String joinToken(String token, String rest) {
+        if (token == null || token.isBlank()) {
+            return rest == null ? "" : rest.trim();
+        }
         if (rest == null || rest.isBlank()) {
             return token;
         }
         return token + " " + rest;
+    }
+
+    private static String place(String district, String detail) {
+        String where = district == null ? "" : district.trim();
+        String extra = detail == null ? "" : detail.trim();
+        if (where.isBlank()) {
+            return extra;
+        }
+        if (extra.isBlank() || extra.equalsIgnoreCase(where)) {
+            return where;
+        }
+        if (extra.toLowerCase().startsWith(where.toLowerCase())) {
+            return extra;
+        }
+        return where + " — " + extra;
+    }
+
+    private static String first(Map<String, String> fields, String key, String fallback) {
+        if (fields != null) {
+            String value = fields.get(key);
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+        return fallback == null ? "" : fallback.trim();
+    }
+
+    private static String firstNonBlank(String... values) {
+        if (values == null) {
+            return "";
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+        return "";
+    }
+
+    private static String firstWord(String rest) {
+        if (rest == null || rest.isBlank()) {
+            return "";
+        }
+        String trimmed = rest.trim();
+        int space = trimmed.indexOf(' ');
+        return space < 0 ? trimmed : trimmed.substring(0, space);
     }
 
     private static void sleepQuietly(long ms) {

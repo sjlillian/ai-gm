@@ -106,7 +106,15 @@ final class GmPrompts {
             {
               "fiction": 3-6 sentences of opening fiction in second person,
               "clocks": array of 2-4 objects {"name": short clock name, "segments": 4 or 6 or 8},
-              "factions": array of 2-4 objects {"faction": name, "status": one of ALLIES, FRIENDLY, HELPFUL, NEUTRAL, INTERFERING, HOSTILE, WAR}
+              "factions": array of 2-4 objects {"faction": name, "status": one of ALLIES, FRIENDLY, HELPFUL, NEUTRAL, INTERFERING, HOSTILE, WAR},
+              "scores": array of 3 objects {
+                "title": short job name,
+                "hook": 1-2 sentences the GM would drop as a rumor or offer,
+                "targetName": who or what,
+                "targetTier": ZERO through TWO,
+                "planType": one of ASSAULT, DECEPTION, STEALTH, OCCULT, SOCIAL, TRANSPORT,
+                "district": a Doskvol district
+              }
             }
             """.formatted(nullToEmpty(crewSummary));
         return LlmRequest.builder()
@@ -123,6 +131,7 @@ final class GmPrompts {
             You are the GM for Blades in the Dark in Doskvol. Prepare situation, not plot:
             a target, a prize, competing factions, and 2-4 clocks. Be a fan of the scoundrels.
             Keep unknowns unknown. Concrete, immediate pressure over lore dumps.
+            Offer jobs, not a plot railroad. Each score is a rumor the crew can ignore, investigate, or take.
             """;
     }
 

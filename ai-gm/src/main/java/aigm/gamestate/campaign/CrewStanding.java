@@ -18,7 +18,20 @@ public record CrewStanding(
     public static final int BASE_REP_TRACK = 12;
 
     public enum Reputation {
-        AMBITIOUS, BRUTAL, DARING, HONORABLE, PROFESSIONAL, SAVVY, SUBTLE, STRANGE
+        AMBITIOUS, BRUTAL, DARING, HONORABLE, PROFESSIONAL, SAVVY, SUBTLE, STRANGE;
+
+        public String getDescription() {
+            return switch (this) {
+                case AMBITIOUS -> "You make bold plays and chase bigger scores.";
+                case BRUTAL -> "You solve problems with fear and blood.";
+                case DARING -> "You take chances others won't.";
+                case HONORABLE -> "You keep your word — a rare and useful reputation among thieves.";
+                case PROFESSIONAL -> "You work clean, on time, and without messy surprises.";
+                case SAVVY -> "You always seem to know a better angle.";
+                case SUBTLE -> "People don't notice you until it's too late.";
+                case STRANGE -> "Whispers follow you: occult, uncanny, not quite right.";
+            };
+        }
     }
 
     public enum Tier {

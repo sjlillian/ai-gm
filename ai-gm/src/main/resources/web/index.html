@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI-GM</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark">AI-GM</span>
+      <span id="phase-badge" class="badge">idle</span>
+    </div>
+    <form id="connect-form" class="connect">
+      <input id="campaign-id" name="id" type="text" placeholder="campaign id" autocomplete="off" spellcheck="false">
+      <button type="submit" data-mode="attach">Attach</button>
+      <button type="button" data-mode="blank">Session 0</button>
+      <button type="button" data-mode="demo">Demo</button>
+    </form>
+  </header>
+
+  <main class="layout">
+    <aside class="rail">
+      <h2>Clients</h2>
+      <nav id="clients" class="clients"></nav>
+      <p id="idle-note" class="hint">Attach or start a campaign. The worker must already be running.</p>
+    </aside>
+
+    <section class="play">
+      <article class="panel hidden" id="situation-panel">
+        <h2>The situation</h2>
+        <p id="situation-text" class="message"></p>
+        <p id="investigation-text" class="message hint"></p>
+        <div id="opportunities" class="jobs"></div>
+      </article>
+
+      <article class="panel" id="prompt-panel">
+        <h2>Prompt</h2>
+        <p id="prompt-step" class="kicker"></p>
+        <p id="prompt-message" class="message">Nothing to answer yet.</p>
+        <div id="prompt-options" class="options"></div>
+        <form id="respond-form" class="respond hidden"></form>
+      </article>
+
+      <article class="panel" id="actions-panel">
+        <h2>Actions</h2>
+        <div id="actions" class="actions"></div>
+      </article>
+
+      <p id="status" class="status" hidden></p>
+    </section>
+
+    <section class="inspect">
+      <article class="panel">
+        <h2>Selected client</h2>
+        <div id="client-state" class="tree"></div>
+      </article>
+      <article class="panel">
+        <h2>Campaign</h2>
+        <div id="campaign-state" class="tree"></div>
+      </article>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
