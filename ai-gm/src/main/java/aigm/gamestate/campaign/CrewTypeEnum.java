@@ -294,4 +294,20 @@ public enum CrewTypeEnum implements CrewType {
     public List<Claim> getClaims() {
         return claims;
     }
+
+    @Override
+    public List<Upgrade> getStartingUpgrades() {
+        return switch (this) {
+            case ASSASSINS -> List.of(
+                UpgradeEnum.TRAINING_INSIGHT, UpgradeEnum.TRAINING_PROWESS, UpgradeEnum.ASSASSIN_RIGGING);
+            case BRAVOS -> List.of(UpgradeEnum.TRAINING_PROWESS, UpgradeEnum.COHORT);
+            case CULT -> List.of(
+                UpgradeEnum.TRAINING_RESOLVE, UpgradeEnum.COHORT, UpgradeEnum.RITUAL_SANCTUM_IN_LAIR);
+            case HAWKERS -> List.of(
+                UpgradeEnum.TRAINING_RESOLVE, UpgradeEnum.SECURE_LAIR, UpgradeEnum.HAWKER_RIGGING);
+            case SHADOWS -> List.of(
+                UpgradeEnum.TRAINING_PROWESS, UpgradeEnum.HIDDEN_LAIR, UpgradeEnum.THIEF_RIGGING);
+            case SMUGGLERS -> List.of(UpgradeEnum.TRAINING_PROWESS);
+        };
+    }
 }

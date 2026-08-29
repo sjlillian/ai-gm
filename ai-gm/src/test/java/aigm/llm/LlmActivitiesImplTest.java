@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
+import aigm.gamestate.campaign.RelationshipStatus;
 import aigm.gamestate.player.Action;
 
 class LlmActivitiesImplTest {
@@ -46,5 +47,16 @@ class LlmActivitiesImplTest {
     void stubNarrationIsNonEmpty() {
         String text = activities.narrate("The engagement roll is a 6", "Starting position: Controlled");
         assertTrue(text.contains("Doskvol") || text.contains("lamps") || text.length() > 10);
+    }
+
+    @Test
+    void stubStartingSituationHasFictionAndClocks() {
+        LlmActivities.StartingSituation result = activities.generateStartingSituation(
+            "Crew: The Nightspires (Shadows)\nLair: Crow's Foot loft"
+        );
+        assertTrue(result.fiction().length() > 10);
+        assertTrue(result.clocks().size() >= 2);
+        assertEquals("Lampblacks vs Crows", result.clocks().get(0).name());
+        assertEquals(RelationshipStatus.HELPFUL, result.factions().get(0).status());
     }
 }

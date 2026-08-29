@@ -49,7 +49,6 @@ public final class CatalogDeserializers {
      */
     public static final class AbilityDeserializer extends JsonDeserializer<Ability> {
         @Override
-        @SuppressWarnings("unchecked")
         public Ability deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
             JsonToken token = p.currentToken();
             if (token == JsonToken.VALUE_NULL) {
@@ -81,7 +80,6 @@ public final class CatalogDeserializers {
      */
     public static final class ContactDeserializer extends JsonDeserializer<Contact> {
         @Override
-        @SuppressWarnings("unchecked")
         public Contact deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
             JsonToken token = p.currentToken();
             if (token == JsonToken.VALUE_NULL) {

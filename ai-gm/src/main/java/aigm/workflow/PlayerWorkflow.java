@@ -1,18 +1,24 @@
 package aigm.workflow;
 
 import aigm.gamestate.DiceRoll;
+import aigm.gamestate.player.Action;
 import aigm.gamestate.player.Advancement;
+import aigm.gamestate.player.Background;
 import aigm.gamestate.player.Harm;
+import aigm.gamestate.player.Heritage;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.player.Trauma;
+import aigm.gamestate.player.ViceKind;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
+import io.temporal.workflow.UpdateMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 
 /**
  * Long-running workflow representing a single Player Character. Started as a child of
- * CampaignWorkflow, one per PC, at campaign creation time.
+ * CampaignWorkflow, one per PC, at campaign creation time (or during Session 0 via
+ * {@code joinPlayer}). Incomplete sheets run {@code characterCreation()} first.
  * <p>
  * Lifecycle notes:
  * - Workflow ID should be deterministic, e.g. "pc-{crewId}-{pcId}", so ScoreWorkflow /
@@ -103,4 +109,37 @@ public interface PlayerWorkflow {
 
     @QueryMethod
     boolean needsTraumaChoice();
+
+    @UpdateMethod
+    CreationPrompt choosePlaybook(String playbookName);
+
+    @UpdateMethod
+    CreationPrompt chooseHeritage(Heritage heritage, String detail);
+
+    @UpdateMethod
+    CreationPrompt chooseBackground(Background background, String detail);
+
+    @UpdateMethod
+    CreationPrompt assignActionDot(Action action);
+
+    @UpdateMethod
+    CreationPrompt chooseAbility(String abilityName);
+
+    @UpdateMethod
+    CreationPrompt chooseContacts(String friendName, String rivalName);
+
+    @UpdateMethod
+    CreationPrompt chooseVice(ViceKind kind, String purveyor);
+
+    @UpdateMethod
+    CreationPrompt setIdentity(String name, String alias, String look);
+
+    @QueryMethod
+    CreationPrompt getCreationPrompt();
+
+    @QueryMethod
+    boolean isCreationComplete();
+
+    @QueryMethod
+    PcCreationStep getCreationStep();
 }

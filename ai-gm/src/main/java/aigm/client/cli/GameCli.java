@@ -19,6 +19,7 @@ import aigm.gamestate.score.ScoreType;
 import aigm.llm.LlmActivities;
 import aigm.workflow.ActionRollResult;
 import aigm.workflow.CampaignWorkflow;
+import aigm.workflow.CreationPrompt;
 import aigm.workflow.DowntimeActivityChoice;
 import aigm.workflow.ScoreEndRequest;
 import aigm.workflow.ScoreRequest;
@@ -47,7 +48,11 @@ public final class GameCli {
     public void run(String[] args) {
         out.println("AI-GM CLI. Type help. Worker must already be running.");
         if (args.length > 0 && "new".equalsIgnoreCase(args[0])) {
-            startNew(args.length > 1 ? args[1] : "campaign-demo");
+            if (args.length > 1 && "demo".equalsIgnoreCase(args[1])) {
+                startDemo(args.length > 2 ? args[2] : "campaign-demo");
+            } else {
+                startSessionZero(args.length > 1 ? args[1] : "campaign-demo");
+            }
         } else if (args.length > 1 && "attach".equalsIgnoreCase(args[0])) {
             game.attach(args[1]);
             out.println("attached " + args[1]);
@@ -79,7 +84,13 @@ public final class GameCli {
         String cmd = p[0].toLowerCase(Locale.ROOT);
         switch (cmd) {
             case "help", "?" -> printHelp();
-            case "new" -> startNew(p.length > 1 ? p[1] : "campaign-demo");
+            case "new" -> {
+                if (p.length > 1 && "demo".equalsIgnoreCase(p[1])) {
+                    startDemo(p.length > 2 ? p[2] : "campaign-demo");
+                } else {
+                    startSessionZero(p.length > 1 ? p[1] : "campaign-demo");
+                }
+            }
             case "attach" -> {
                 require(p, 2, "attach <campaignId>");
                 game.attach(p[1]);
@@ -164,6 +175,34 @@ public final class GameCli {
                 out.println("downtime closed");
                 printStatus();
             }
+            case "join" -> {
+                require(p, 2, "join <pcId>");
+                printPrompt(game.joinPlayer(p[1]));
+            }
+            case "ready" -> printPrompt(game.closeJoining());
+            case "pc" -> {
+                require(p, 3, "pc <pcId> <choice...>  (see prompt <pcId>)");
+                String rest = p.length > 3 ? join(p, 3) : "";
+                printPrompt(game.applyPcCreation(p[1], p[2], rest));
+            }
+            case "crew" -> {
+                require(p, 2, "crew <choice...>  (see prompt)");
+                String rest = p.length > 2 ? join(p, 2) : "";
+                CreationPrompt next = game.applyCrewCreation(p[1], rest);
+                printPrompt(next);
+                if (next.complete()) {
+                    out.println("(starting situation generating — status in a moment)");
+                    printStatus();
+                }
+            }
+            case "prompt" -> {
+                if (p.length > 1) {
+                    printPrompt(game.getPcCreationPrompt(p[1]));
+                } else {
+                    CampaignSnapshot snap = game.snapshot();
+                    printPrompt(snap.creationPrompt());
+                }
+            }
             case "sheet" -> {
                 require(p, 2, "sheet <pc>");
                 Player player = game.getPlayer(p[1]);
@@ -186,10 +225,28 @@ public final class GameCli {
         return true;
     }
 
-    private void startNew(String id) {
-        String started = game.startCampaign(DemoCrews.nightspires(), id);
-        out.println("started " + started);
+    private void startSessionZero(String id) {
+        String started = game.startBlankCampaign(id);
+        out.println("started " + started + " (Session 0). join <pcId>, then ready.");
         printStatus();
+    }
+
+    private void startDemo(String id) {
+        String started = game.startCampaign(DemoCrews.nightspires(), id);
+        out.println("started demo " + started);
+        printStatus();
+    }
+
+    private void printPrompt(CreationPrompt prompt) {
+        if (prompt == null) {
+            out.println("(no creation prompt)");
+            return;
+        }
+        out.println("step=" + prompt.step() + (prompt.complete() ? " DONE" : ""));
+        out.println(prompt.message());
+        if (!prompt.options().isEmpty()) {
+            out.println("options: " + String.join(", ", prompt.options()));
+        }
     }
 
     private void printStatus() {
@@ -213,13 +270,27 @@ public final class GameCli {
             out.println("downtime=" + snap.activeDowntimeWorkflowId());
             out.println("choices=" + snap.downtimeChoices());
         }
+        if (snap.phase() == CampaignWorkflow.Phase.SESSION_ZERO) {
+            if (snap.sessionZero() != null) {
+                out.println("session0=" + snap.sessionZero());
+            }
+            if (snap.creationPrompt() != null) {
+                printPrompt(snap.creationPrompt());
+            }
+        }
     }
 
     private void printHelp() {
         out.println("""
-            new [id]
+            new [id]                 Session 0 (blank crew)
+            new demo [id]            skip Session 0 with The Nightspires
             attach <id>
             status
+            join <pcId>
+            ready
+            prompt [pcId]
+            pc <pcId> <choice...>    apply current PC creation step
+            crew <choice...>         apply current crew creation step
             score <title> <PLAN> <target> <tier> <dice>
               PLAN=ASSAULT|DECEPTION|STEALTH|OCCULT|SOCIAL|TRANSPORT
             adjudicate <ACTION> <situation...>

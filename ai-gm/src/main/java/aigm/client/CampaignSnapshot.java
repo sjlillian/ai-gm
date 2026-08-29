@@ -8,7 +8,9 @@ import aigm.gamestate.Position;
 import aigm.gamestate.campaign.Crew;
 import aigm.llm.LlmActivities;
 import aigm.workflow.CampaignWorkflow;
+import aigm.workflow.CreationPrompt;
 import aigm.workflow.DowntimeActivityChoice;
+import aigm.workflow.SessionZeroStatus;
 
 /**
  * Read model for any UI. Built from workflow queries — never from LLM chat history.
@@ -25,5 +27,7 @@ public record CampaignSnapshot(
     Position engagementPosition,
     Map<String, Clock> scoreClocks,
     LlmActivities.Adjudication lastAdjudication,
-    Map<String, List<DowntimeActivityChoice>> downtimeChoices
+    Map<String, List<DowntimeActivityChoice>> downtimeChoices,
+    SessionZeroStatus sessionZero,
+    CreationPrompt creationPrompt
 ) {}

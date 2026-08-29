@@ -14,4 +14,9 @@ public interface CrewType {
     List<Contact> getContacts();
     List<Claim> getClaims();
 
+    /** Printed starting upgrades for this type. Custom types default to none. */
+    default List<Upgrade> getStartingUpgrades() {
+        return List.of();
+    }
+
 }

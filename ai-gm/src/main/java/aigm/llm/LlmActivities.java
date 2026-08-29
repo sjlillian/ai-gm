@@ -4,6 +4,7 @@ import java.util.List;
 
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
+import aigm.gamestate.campaign.RelationshipStatus;
 import aigm.gamestate.player.Action;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -21,6 +22,9 @@ public interface LlmActivities {
     @ActivityMethod
     String narrate(String situation, String mechanicalOutcome);
 
+    @ActivityMethod
+    StartingSituation generateStartingSituation(String crewSummary);
+
     record Adjudication(
         Action action,
         Position position,
@@ -31,6 +35,22 @@ public interface LlmActivities {
         public Adjudication {
             possibleStakes = possibleStakes == null ? List.of() : List.copyOf(possibleStakes);
             reasoning = reasoning == null ? "" : reasoning;
+        }
+    }
+
+    record ClockSpec(String name, int segments) {}
+
+    record FactionNote(String faction, RelationshipStatus status) {}
+
+    record StartingSituation(
+        String fiction,
+        List<ClockSpec> clocks,
+        List<FactionNote> factions
+    ) {
+        public StartingSituation {
+            fiction = fiction == null ? "" : fiction;
+            clocks = clocks == null ? List.of() : List.copyOf(clocks);
+            factions = factions == null ? List.of() : List.copyOf(factions);
         }
     }
 }

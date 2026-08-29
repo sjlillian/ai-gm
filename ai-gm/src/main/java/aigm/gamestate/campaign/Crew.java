@@ -38,16 +38,62 @@ public record Crew(
     public static final int COIN_CAP_WITHOUT_VAULT = 4;
 
     public Crew {
-        members = List.copyOf(members);
-        abilities = List.copyOf(abilities);
-        upgrades = List.copyOf(upgrades);
-        contacts = List.copyOf(contacts);
-        claims = List.copyOf(claims);
-        scores = List.copyOf(scores);
-        clocks = List.copyOf(clocks);
-        cohorts = List.copyOf(cohorts);
-        factionStatuses = Map.copyOf(factionStatuses);
+        name = name == null ? "" : name;
+        lair = lair == null ? "" : lair;
+        huntingGrounds = huntingGrounds == null ? "" : huntingGrounds;
+        members = members == null ? List.of() : List.copyOf(members);
+        abilities = abilities == null ? List.of() : List.copyOf(abilities);
+        upgrades = upgrades == null ? List.of() : List.copyOf(upgrades);
+        contacts = contacts == null ? List.of() : List.copyOf(contacts);
+        claims = claims == null ? List.of() : List.copyOf(claims);
+        scores = scores == null ? List.of() : List.copyOf(scores);
+        clocks = clocks == null ? List.of() : List.copyOf(clocks);
+        cohorts = cohorts == null ? List.of() : List.copyOf(cohorts);
+        factionStatuses = factionStatuses == null ? Map.of() : Map.copyOf(factionStatuses);
         coin = Math.max(0, coin);
+    }
+
+    /** Empty sheet for Session 0. Type/name/lair fill in during crew creation. */
+    public static Crew blank() {
+        return new Crew(
+            "",
+            null,
+            "",
+            "",
+            List.of(),
+            2,
+            new Heat(),
+            new CrewStanding(),
+            new Clock("Crew XP", CREW_XP_BOXES),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            Map.of()
+        );
+    }
+
+    public Crew withName(String name) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
+    }
+
+    public Crew withType(CrewType type) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
+    }
+
+    public Crew withLair(String lair) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
+    }
+
+    public Crew withHuntingGrounds(String huntingGrounds) {
+        return new Crew(name, type, lair, huntingGrounds, members, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
+    }
+
+    public Crew withReputation(CrewStanding.Reputation reputation) {
+        return withCrewStanding(crewStanding.withReputation(reputation));
     }
 
     public Crew addMember(Player player) {
@@ -190,7 +236,7 @@ public record Crew(
         return false;
     }
 
-    private Crew withMembers(List<Player> v) {
+    public Crew withMembers(List<Player> v) {
         return new Crew(name, type, lair, huntingGrounds, v, coin, heat, crewStanding, crewXP, abilities, upgrades, contacts, claims, scores, clocks, cohorts, factionStatuses);
     }
 

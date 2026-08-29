@@ -104,6 +104,10 @@ public record CrewStanding(
         return new CrewStanding(reputation, tier.decrease(), hold, rep, turf);
     }
 
+    public CrewStanding withReputation(Reputation reputation) {
+        return new CrewStanding(reputation, tier, hold, rep, turf);
+    }
+
     private Clock resetRep() {
         return new Clock("Rep", 0, repTrackSize());
     }

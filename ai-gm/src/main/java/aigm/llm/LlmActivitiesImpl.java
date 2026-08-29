@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import aigm.gamestate.Effect;
 import aigm.gamestate.Position;
+import aigm.gamestate.campaign.RelationshipStatus;
 import aigm.gamestate.player.Action;
 import io.temporal.activity.Activity;
 import io.temporal.failure.ApplicationFailure;
@@ -46,6 +47,56 @@ public class LlmActivitiesImpl implements LlmActivities {
             throw LlmException.retryable("LLM returned empty narration", 200);
         }
         return text;
+    }
+
+    @Override
+    public StartingSituation generateStartingSituation(String crewSummary) {
+        LlmResponse response = invoke(GmPrompts.startingSituation(crewSummary));
+        return parseStartingSituation(response.content());
+    }
+
+    StartingSituation parseStartingSituation(String raw) {
+        JsonNode node;
+        try {
+            node = MAPPER.readTree(extractJsonObject(raw));
+        } catch (IOException e) {
+            throw LlmException.retryable("LLM starting situation was not JSON: " + e.getMessage(), e);
+        }
+        String fiction = text(node, "fiction");
+        if (fiction.isBlank()) {
+            throw LlmException.retryable("LLM starting situation missing fiction", 200);
+        }
+        List<ClockSpec> clocks = new ArrayList<>();
+        JsonNode clocksNode = node.get("clocks");
+        if (clocksNode != null && clocksNode.isArray()) {
+            clocksNode.forEach(item -> {
+                String name = item.path("name").asText("");
+                int segments = item.path("segments").asInt(4);
+                if (!name.isBlank()) {
+                    clocks.add(new ClockSpec(name, Math.max(4, segments)));
+                }
+            });
+        }
+        if (clocks.isEmpty()) {
+            clocks.add(new ClockSpec("Opening Trouble", 6));
+            clocks.add(new ClockSpec("Faction Pressure", 4));
+        }
+        List<FactionNote> factions = new ArrayList<>();
+        JsonNode factionsNode = node.get("factions");
+        if (factionsNode != null && factionsNode.isArray()) {
+            factionsNode.forEach(item -> {
+                String faction = item.path("faction").asText("");
+                RelationshipStatus status = parseEnum(
+                    RelationshipStatus.class,
+                    item.path("status").asText(""),
+                    RelationshipStatus.NEUTRAL
+                );
+                if (!faction.isBlank()) {
+                    factions.add(new FactionNote(faction, status));
+                }
+            });
+        }
+        return new StartingSituation(fiction, clocks, factions);
     }
 
     private LlmResponse invoke(LlmRequest request) {

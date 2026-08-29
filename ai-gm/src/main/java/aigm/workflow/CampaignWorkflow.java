@@ -3,8 +3,10 @@ package aigm.workflow;
 import aigm.gamestate.Clock;
 import aigm.gamestate.campaign.Claim;
 import aigm.gamestate.campaign.Crew;
+import aigm.gamestate.player.Player;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
+import io.temporal.workflow.UpdateMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
 
@@ -30,15 +32,19 @@ import io.temporal.workflow.WorkflowMethod;
  * - This workflow is the ONLY thing that mutates CrewState (Tier, coin, rep, heat,
  *   wanted level, hold, claims, crew upgrades). ScoreWorkflow and DowntimeWorkflow
  *   do not touch crew state directly — they call the signal methods below.
- * - PlayerWorkflow children are started here (once, at campaign creation)
+ * - PlayerWorkflow children are started here (once, after Session 0 — or immediately
+ *   when {@link CampaignState#sessionZeroComplete()} is already true for a demo crew)
  *   with ParentClosePolicy.ABANDON so they survive CampaignWorkflow.continueAsNew.
  *   Persist their workflow IDs so ScoreWorkflow / DowntimeWorkflow can signal them
  *   as external workflows.
+ * - If {@code sessionZeroComplete} is false, {@code run()} enters {@link Phase#SESSION_ZERO},
+ *   joins PCs, runs crew creation, generates a starting situation, then continueAsNew.
  */
 @WorkflowInterface
 public interface CampaignWorkflow {
 
     public enum Phase {
+        SESSION_ZERO,
         SCORE,
         DOWNTIME,
         FREEPLAY
@@ -118,4 +124,50 @@ public interface CampaignWorkflow {
     /** PC child workflow IDs started for this campaign. */
     @QueryMethod
     java.util.List<String> getPcWorkflowIds();
+
+    /**
+     * Session 0: start a PlayerWorkflow child with a draft sheet. {@code pcId} is the
+     * stable join id (workflow id {@code pc-{campaign}-{pcId}}), not necessarily the
+     * character's finished name.
+     */
+    @UpdateMethod
+    CreationPrompt joinPlayer(String pcId);
+
+    /** Session 0: stop accepting joins and wait for every joined PC to finish creation. */
+    @UpdateMethod
+    CreationPrompt closeJoining();
+
+    /** Signaled by a PlayerWorkflow when character creation is done. */
+    @SignalMethod
+    void pcCreationComplete(String pcId, Player player);
+
+    @UpdateMethod
+    CreationPrompt chooseCrewType(String typeName);
+
+    @UpdateMethod
+    CreationPrompt chooseReputation(String reputation);
+
+    @UpdateMethod
+    CreationPrompt setLair(String lair);
+
+    @UpdateMethod
+    CreationPrompt setHuntingGrounds(String huntingGrounds);
+
+    @UpdateMethod
+    CreationPrompt chooseCrewAbility(String abilityName);
+
+    @UpdateMethod
+    CreationPrompt chooseCrewContact(String contactName);
+
+    @UpdateMethod
+    CreationPrompt chooseUpgrade(String upgradeName);
+
+    @UpdateMethod
+    CreationPrompt setCrewName(String name);
+
+    @QueryMethod
+    CreationPrompt getCreationPrompt();
+
+    @QueryMethod
+    SessionZeroStatus getSessionZeroStatus();
 }

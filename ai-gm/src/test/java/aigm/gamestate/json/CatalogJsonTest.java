@@ -39,6 +39,15 @@ class CatalogJsonTest {
     private final DataConverter converter = GameDataConverter.create();
 
     @Test
+    void roundTripsBlankCampaignState() {
+        CampaignState original = CampaignState.blank();
+        CampaignState restored = roundTrip(original, CampaignState.class);
+        assertEquals(false, restored.sessionZeroComplete());
+        assertEquals("", restored.crew().name());
+        assertEquals(null, restored.crew().type());
+    }
+
+    @Test
     void roundTripsDemoCampaignState() {
         CampaignState original = CampaignState.initial(DemoCrews.nightspires());
         CampaignState restored = roundTrip(original, CampaignState.class);

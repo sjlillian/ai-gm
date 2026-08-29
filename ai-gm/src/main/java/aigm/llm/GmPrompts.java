@@ -93,6 +93,39 @@ final class GmPrompts {
             """;
     }
 
+    static LlmRequest startingSituation(String crewSummary) {
+        String user = """
+            Session 0 is over. The crew sheet is:
+
+            %s
+
+            Invent a starting situation in Doskvol that gives this crew a reason to act immediately.
+            Do not invent hidden canonical facts; offer playable hooks.
+
+            Reply with a single JSON object:
+            {
+              "fiction": 3-6 sentences of opening fiction in second person,
+              "clocks": array of 2-4 objects {"name": short clock name, "segments": 4 or 6 or 8},
+              "factions": array of 2-4 objects {"faction": name, "status": one of ALLIES, FRIENDLY, HELPFUL, NEUTRAL, INTERFERING, HOSTILE, WAR}
+            }
+            """.formatted(nullToEmpty(crewSummary));
+        return LlmRequest.builder()
+            .addSystem(startingSituationSystem())
+            .addUser(user)
+            .temperature(0.7)
+            .maxTokens(800)
+            .jsonObject(true)
+            .build();
+    }
+
+    private static String startingSituationSystem() {
+        return """
+            You are the GM for Blades in the Dark in Doskvol. Prepare situation, not plot:
+            a target, a prize, competing factions, and 2-4 clocks. Be a fan of the scoundrels.
+            Keep unknowns unknown. Concrete, immediate pressure over lore dumps.
+            """;
+    }
+
     private static String actionList() {
         StringBuilder sb = new StringBuilder();
         Action[] actions = Action.values();

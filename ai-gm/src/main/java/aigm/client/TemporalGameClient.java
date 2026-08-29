@@ -11,18 +11,23 @@ import aigm.gamestate.Position;
 import aigm.gamestate.campaign.Crew;
 import aigm.gamestate.json.GameDataConverter;
 import aigm.gamestate.player.Action;
+import aigm.gamestate.player.Background;
+import aigm.gamestate.player.Heritage;
 import aigm.gamestate.player.Player;
 import aigm.gamestate.player.Trauma;
+import aigm.gamestate.player.ViceKind;
 import aigm.llm.LlmActivities;
 import aigm.workflow.ActionRollResult;
 import aigm.workflow.CampaignState;
 import aigm.workflow.CampaignWorkflow;
+import aigm.workflow.CreationPrompt;
 import aigm.workflow.DowntimeActivityChoice;
 import aigm.workflow.DowntimeWorkflow;
 import aigm.workflow.PlayerWorkflow;
 import aigm.workflow.ScoreEndRequest;
 import aigm.workflow.ScoreRequest;
 import aigm.workflow.ScoreWorkflow;
+import aigm.workflow.SessionZeroStatus;
 import aigm.workflow.WorkflowSupport;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowClientOptions;
@@ -74,6 +79,24 @@ public final class TemporalGameClient implements AutoCloseable {
         return workflowId;
     }
 
+    public String startBlankCampaign(String campaignIdOrNull) {
+        String workflowId = campaignIdOrNull == null || campaignIdOrNull.isBlank()
+            ? "campaign-" + UUID.randomUUID()
+            : campaignIdOrNull;
+
+        CampaignWorkflow workflow = client.newWorkflowStub(
+            CampaignWorkflow.class,
+            WorkflowOptions.newBuilder()
+                .setTaskQueue(TaskQueues.GAME)
+                .setWorkflowId(workflowId)
+                .build()
+        );
+        WorkflowClient.start(workflow::run, CampaignState.blank());
+        this.campaignWorkflowId = workflowId;
+        sleepQuietly(750);
+        return workflowId;
+    }
+
     public void attach(String campaignWorkflowId) {
         if (campaignWorkflowId == null || campaignWorkflowId.isBlank()) {
             throw new IllegalArgumentException("campaignWorkflowId required");
@@ -102,6 +125,8 @@ public final class TemporalGameClient implements AutoCloseable {
         Map<String, Clock> scoreClocks = Map.of();
         LlmActivities.Adjudication lastAdj = null;
         Map<String, List<DowntimeActivityChoice>> downtimeChoices = Map.of();
+        SessionZeroStatus sessionZero = null;
+        CreationPrompt creationPrompt = null;
 
         if (phase == CampaignWorkflow.Phase.SCORE) {
             scoreId = WorkflowSupport.scoreWorkflowId(campaignWorkflowId, cycle);
@@ -120,6 +145,13 @@ public final class TemporalGameClient implements AutoCloseable {
             } catch (RuntimeException ignored) {
                 // same
             }
+        } else if (phase == CampaignWorkflow.Phase.SESSION_ZERO) {
+            try {
+                sessionZero = campaign.getSessionZeroStatus();
+                creationPrompt = campaign.getCreationPrompt();
+            } catch (RuntimeException ignored) {
+                // same
+            }
         }
 
         return new CampaignSnapshot(
@@ -134,7 +166,9 @@ public final class TemporalGameClient implements AutoCloseable {
             engagement,
             scoreClocks,
             lastAdj,
-            downtimeChoices
+            downtimeChoices,
+            sessionZero,
+            creationPrompt
         );
     }
 
@@ -194,6 +228,69 @@ public final class TemporalGameClient implements AutoCloseable {
 
     public Player getPlayer(String pcNameOrWorkflowId) {
         return playerStub(pcNameOrWorkflowId).getState();
+    }
+
+    public CreationPrompt joinPlayer(String pcId) {
+        requireAttached();
+        CreationPrompt prompt = campaign().joinPlayer(pcId);
+        sleepQuietly(400);
+        return prompt;
+    }
+
+    public CreationPrompt closeJoining() {
+        requireAttached();
+        return campaign().closeJoining();
+    }
+
+    public CreationPrompt applyCrewCreation(String token, String rest) {
+        requireAttached();
+        CampaignWorkflow campaign = campaign();
+        CreationPrompt current = campaign.getCreationPrompt();
+        String step = current.step();
+        return switch (step) {
+            case "TYPE" -> campaign.chooseCrewType(token);
+            case "REPUTATION" -> campaign.chooseReputation(token);
+            case "LAIR" -> campaign.setLair(joinToken(token, rest));
+            case "HUNTING_GROUNDS" -> campaign.setHuntingGrounds(joinToken(token, rest));
+            case "ABILITY" -> campaign.chooseCrewAbility(token);
+            case "CONTACT" -> campaign.chooseCrewContact(token);
+            case "UPGRADES" -> campaign.chooseUpgrade(token);
+            case "NAME" -> campaign.setCrewName(joinToken(token, rest));
+            default -> throw new IllegalStateException("Crew creation step is " + step + ": " + current.message());
+        };
+    }
+
+    public CreationPrompt applyPcCreation(String pcId, String token, String rest) {
+        PlayerWorkflow pc = playerStub(pcId);
+        return switch (pc.getCreationStep()) {
+            case PLAYBOOK -> pc.choosePlaybook(token);
+            case HERITAGE -> pc.chooseHeritage(
+                Heritage.valueOf(token.toUpperCase().replace('-', '_')),
+                rest);
+            case BACKGROUND -> pc.chooseBackground(
+                Background.valueOf(token.toUpperCase().replace('-', '_')),
+                rest);
+            case ACTIONS -> pc.assignActionDot(Action.valueOf(token.toUpperCase()));
+            case ABILITY -> pc.chooseAbility(token);
+            case CONTACTS -> {
+                String rival = rest.split("\\s+")[0];
+                yield pc.chooseContacts(token, rival);
+            }
+            case VICE -> pc.chooseVice(
+                ViceKind.valueOf(token.toUpperCase()),
+                rest);
+            case IDENTITY -> {
+                String[] parts = rest.isBlank() ? new String[0] : rest.split("\\s+", 2);
+                String alias = parts.length > 0 ? parts[0] : "";
+                String look = parts.length > 1 ? parts[1] : "";
+                yield pc.setIdentity(token, alias, look);
+            }
+            case DONE -> pc.getCreationPrompt();
+        };
+    }
+
+    public CreationPrompt getPcCreationPrompt(String pcId) {
+        return playerStub(pcId).getCreationPrompt();
     }
 
     public void markTrauma(String pcNameOrWorkflowId, Trauma.Condition condition) {
@@ -258,6 +355,13 @@ public final class TemporalGameClient implements AutoCloseable {
 
     private static String blankTo(String value, String fallback) {
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static String joinToken(String token, String rest) {
+        if (rest == null || rest.isBlank()) {
+            return token;
+        }
+        return token + " " + rest;
     }
 
     private static void sleepQuietly(long ms) {

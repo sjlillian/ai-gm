@@ -46,7 +46,11 @@ public final class DemoCrews {
             new Advancement(),
             new Loadout(),
             null,
-            null
+            null,
+            "Whisper",
+            "lean Akorosi in a dark coat",
+            "Doskvol native",
+            "Crow's Foot gangs"
         );
 
         return new Crew(
