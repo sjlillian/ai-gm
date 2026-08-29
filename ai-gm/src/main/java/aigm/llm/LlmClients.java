@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Resolves an {@link LlmClient} from env vars. {@code AIGM_LLM_CLIENT} is
- * {@code stub} or {@code openai}; if unset, a configured base URL / model / key
- * selects OpenAI-compatible HTTP, otherwise the stub.
+ * {@code stub}, {@code ollama}, or {@code openai}; if unset, a configured base
+ * URL / model / key selects OpenAI-compatible HTTP, otherwise the stub.
  */
 public final class LlmClients {
 
@@ -31,17 +31,17 @@ public final class LlmClients {
                 : new StubLlmClient();
         } else if ("stub".equals(requested)) {
             client = new StubLlmClient();
-        } else if ("openai".equals(requested)) {
+        } else if ("openai".equals(requested) || "ollama".equals(requested)) {
             client = new OpenAiCompatibleClient(settings);
         } else {
             throw LlmException.fatal(
-                "Unknown AIGM_LLM_CLIENT '" + requested + "' (use stub or openai)",
+                "Unknown AIGM_LLM_CLIENT '" + requested + "' (use stub, ollama, or openai)",
                 0
             );
         }
         if (client instanceof StubLlmClient && requested.isEmpty()) {
-            log.warn("No AIGM_LLM_* config; using StubLlmClient. Set AIGM_LLM_BASE_URL / "
-                + "AIGM_LLM_MODEL (local) or AIGM_LLM_API_KEY (cloud) to talk to a model.");
+            log.warn("No AIGM_LLM_* config; using StubLlmClient. Set AIGM_LLM_CLIENT=ollama / "
+                + "AIGM_LLM_MODEL, or AIGM_LLM_API_KEY (cloud), to talk to a model.");
         } else {
             log.info("LLM client: {}", client.describe());
         }

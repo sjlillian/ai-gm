@@ -88,7 +88,8 @@ public final class OpenAiCompatibleClient implements LlmClient {
 
     @Override
     public String describe() {
-        return "OpenAiCompatibleClient " + settings.describe();
+        String kind = settings.looksLikeOllama() ? "Ollama" : "OpenAiCompatibleClient";
+        return kind + " " + settings.describe();
     }
 
     ObjectNode toBody(LlmRequest request) {

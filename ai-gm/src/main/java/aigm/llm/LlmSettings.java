@@ -9,7 +9,7 @@ import java.util.function.Function;
  * <p>
  * Environment:
  * <ul>
- *   <li>{@code AIGM_LLM_CLIENT} — provider id ({@code openai}, {@code stub}) or a class name</li>
+ *   <li>{@code AIGM_LLM_CLIENT} — provider id ({@code ollama}, {@code openai}, {@code stub})</li>
  *   <li>{@code AIGM_LLM_BASE_URL} — e.g. {@code http://127.0.0.1:11434} (Ollama),
  *       {@code http://127.0.0.1:1234/v1} (LM Studio), {@code https://api.openai.com/v1}</li>
  *   <li>{@code AIGM_LLM_API_KEY} — optional; falls back to {@code OPENAI_API_KEY}</li>
@@ -36,7 +36,8 @@ public record LlmSettings(
     public static final String ENV_JSON_MODE = "AIGM_LLM_JSON_MODE";
 
     public static final String DEFAULT_OPENAI_URL = "https://api.openai.com/v1";
-    public static final String DEFAULT_LOCAL_URL = "http://127.0.0.1:11434/v1";
+    public static final String DEFAULT_OLLAMA_HOST = "http://127.0.0.1:11434";
+    public static final String DEFAULT_LOCAL_URL = DEFAULT_OLLAMA_HOST + "/v1";
     public static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(120);
 
     public LlmSettings {
@@ -66,7 +67,7 @@ public record LlmSettings(
         if (!timeoutRaw.isBlank()) {
             timeout = Duration.ofSeconds(Long.parseLong(timeoutRaw.trim()));
         }
-        boolean jsonMode = parseBool(first(env, ENV_JSON_MODE), true);
+        boolean jsonMode = parseBool(first(env, ENV_JSON_MODE), defaultJsonMode(client, baseUrl));
         return new LlmSettings(client, baseUrl, apiKey, first(env, ENV_MODEL), timeout, jsonMode);
     }
 
@@ -84,6 +85,14 @@ public record LlmSettings(
     public boolean looksLikeOfficialOpenAi() {
         String host = baseUrl.toLowerCase(Locale.ROOT);
         return host.contains("api.openai.com");
+    }
+
+    public boolean looksLikeOllama() {
+        if ("ollama".equalsIgnoreCase(clientId)) {
+            return true;
+        }
+        String host = baseUrl.toLowerCase(Locale.ROOT);
+        return host.contains("127.0.0.1:11434") || host.contains("localhost:11434");
     }
 
     /** Safe for logs: host + model, never the key. */
@@ -110,6 +119,14 @@ public record LlmSettings(
             }
         }
         return "";
+    }
+
+    private static boolean defaultJsonMode(String clientId, String baseUrl) {
+        if ("ollama".equalsIgnoreCase(clientId)) {
+            return false;
+        }
+        LlmSettings probe = new LlmSettings(clientId, baseUrl, "", "", DEFAULT_TIMEOUT, true);
+        return !probe.looksLikeOllama();
     }
 
     private static boolean parseBool(String raw, boolean fallback) {

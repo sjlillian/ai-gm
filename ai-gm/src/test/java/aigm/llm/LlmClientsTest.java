@@ -26,6 +26,15 @@ class LlmClientsTest {
     }
 
     @Test
+    void ollamaClientIdUsesOpenAiCompatible() {
+        Map<String, String> env = Map.of(LlmSettings.ENV_CLIENT, "ollama");
+        LlmClient client = LlmClients.from(env::get);
+        assertInstanceOf(OpenAiCompatibleClient.class, client);
+        assertTrue(client.describe().contains("Ollama"));
+        assertTrue(client.describe().contains("11434"));
+    }
+
+    @Test
     void modelEnvSelectsOpenAiCompatible() {
         Map<String, String> env = Map.of(
             LlmSettings.ENV_BASE_URL, "http://127.0.0.1:1234/v1",
